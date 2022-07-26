@@ -10,4 +10,13 @@ public class ValidationRegex {
         Matcher matcher = pattern.matcher(target);
         return matcher.find();
     }
+
+    public static boolean isRegexId(String target) {
+        //3~45자리 영문,숫자 조합
+        String regex = "^[a-zA-Z0-9]{3,45}$";
+        Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(target);
+        return matcher.find();
+    }
+
 }
