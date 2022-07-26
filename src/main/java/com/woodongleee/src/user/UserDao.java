@@ -27,21 +27,6 @@ public class UserDao {
         return this.jdbcTemplate.queryForObject(lastInserIdQuery,int.class);
     }
 
-    public CreateUserRes getUserByIdx(int userIdx){
-        String getUsersByIdxQuery = "select userIdx,name,age,gender,email,id,password,town from User where userIdx=?";
-        int getUsersByIdxParams = userIdx;
-        return this.jdbcTemplate.queryForObject(getUsersByIdxQuery,
-                (rs, rowNum) -> new CreateUserRes(
-                        rs.getString("name"),
-                        rs.getInt("age"),
-                        rs.getString("gender"),
-                        rs.getString("email"),
-                        rs.getString("id"),
-                        rs.getString("password"),
-                        rs.getString("town")),
-                getUsersByIdxParams);
-    }
-
     public int isIdDuplicated(String id) {
         String isIdDuplicatedQuery = "select exists(select id from User where id = ?)";
         return this.jdbcTemplate.queryForObject(isIdDuplicatedQuery,
