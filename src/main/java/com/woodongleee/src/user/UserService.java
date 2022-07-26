@@ -5,7 +5,6 @@ import com.woodongleee.src.user.model.CreateUserReq;
 import com.woodongleee.utils.JwtService;
 import com.woodongleee.utils.SHA256;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import static com.woodongleee.config.BaseResponseStatus.*;
 
@@ -51,6 +50,7 @@ public class UserService {
         }
     }
 
+    //인증 코드 생성
     public void createCode(String email, String code) throws BaseException {
         if(userProvider.isEmailVerifyCodeRequestDuplicated(email)){
             int result = userDao.deleteDuplicatedEmail(email);

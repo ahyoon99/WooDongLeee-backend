@@ -36,7 +36,7 @@ public class UserController {
     @PostMapping
     public BaseResponse<String> createUser(@RequestBody CreateUserReq newUser){
 
-        Object params[] = new Object[]{
+        Object[] params = new Object[]{
                 newUser.getName(),
                 newUser.getAge(),
                 newUser.getGender(),
@@ -74,8 +74,6 @@ public class UserController {
         if(!isRegexId(id)){
             return new BaseResponse<>(INVALID_ID_PATTERN);
         }
-
-        String isDuplicated;
         if(userProvider.isIdDuplicated(id)){
             return new BaseResponse<>(DUPLICATED_ID);
         }
