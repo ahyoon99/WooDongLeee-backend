@@ -34,10 +34,12 @@ public class UserProvider {
         return userDao.isEmailDuplicated(email) == 1;
     }
 
+    //이메일 인증 코드 중복 검사 -> 중복시 이전 인증 코드 삭제
     public boolean isEmailVerifyCodeRequestDuplicated(String email){
         return userDao.isEmailVerifyCodeRequestDuplicated(email) == 1;
     }
 
+    //이메일 인증 코드 인증
     public boolean verify(String email, String code) throws BaseException {
         VerifyDomain verifyDomain = userDao.verify(email);
         if(verifyDomain.getExpirationTime().after(new Timestamp(System.currentTimeMillis()))){
