@@ -3,16 +3,21 @@ package com.woodongleee.src.user;
 import com.woodongleee.config.BaseException;
 import com.woodongleee.config.BaseResponse;
 import com.woodongleee.config.BaseResponseStatus;
+import com.woodongleee.src.user.model.UserLoginReq;
+import com.woodongleee.src.user.model.UserLoginRes;
+import com.woodongleee.src.user.model.UserLoginUserIdxAndPassword;
 import com.woodongleee.src.user.model.VerifyDomain;
 import com.woodongleee.utils.JwtService;
+import com.woodongleee.utils.SHA256;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 
-import static com.woodongleee.config.BaseResponseStatus.EMAIL_VERIFY_REQUEST_EXPIRED;
+import static com.woodongleee.config.BaseResponseStatus.*;
 
 
 @Service
@@ -48,5 +53,30 @@ public class UserProvider {
         else{
             throw new BaseException(EMAIL_VERIFY_REQUEST_EXPIRED);
         }
+    }
+
+    public UserLoginRes login(UserLoginReq userLoginReq) throws BaseException {
+        String password;
+        try{
+            //암호화
+            password = SHA256.encrypt(userLoginReq.getPassword());
+            userLoginReq.setPassword(password);
+        } catch (Exception exception) {
+            throw new BaseException(PASSWORD_ENCRYPTION_ERROR);
+        }
+
+        try{
+            UserLoginUserIdxAndPassword userInfo = userDao.login(userLoginReq.getId());
+            if(password.equals(userInfo.getPassword())){
+                String jwt = jwtService.createJwt(userInfo.getUserIdx());
+                return new UserLoginRes(userInfo.getUserIdx(), jwt);
+            }
+            else{
+                throw new BaseException(WRONG_PASSWORD);
+            }
+        } catch (EmptyResultDataAccessException e){
+            throw new BaseException(ID_DOES_NOT_EXIST);
+        }
+
     }
 }

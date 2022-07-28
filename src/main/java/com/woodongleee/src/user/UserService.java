@@ -2,6 +2,7 @@ package com.woodongleee.src.user;
 
 import com.woodongleee.config.BaseException;
 import com.woodongleee.src.user.model.CreateUserReq;
+import com.woodongleee.src.user.model.UserLoginReq;
 import com.woodongleee.utils.JwtService;
 import com.woodongleee.utils.SHA256;
 import org.springframework.stereotype.Service;
@@ -64,4 +65,5 @@ public class UserService {
             throw new BaseException(DATABASE_ERROR);
         }
     }
+
 }
