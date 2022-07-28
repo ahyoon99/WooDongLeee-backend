@@ -1,5 +1,6 @@
 package com.woodongleee.teams;
 
+import com.fasterxml.jackson.databind.ser.Serializers;
 import com.woodongleee.config.BaseException;
 import com.woodongleee.config.BaseResponseStatus;
 import com.woodongleee.teams.model.GetTeamsinfoRes;
@@ -21,6 +22,15 @@ public class TeamsProvider {
     public GetTeamsinfoRes getTeamsByTown(String town) throws BaseException{
         try{
             GetTeamsinfoRes getTeamsinfoRes=teamsDao.getTeaminfoByTown(town);
+            return getTeamsinfoRes;
+        }catch(Exception exception){
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
+
+    public GetTeamsinfoRes getTeamsByName(String name) throws BaseException{
+        try{
+            GetTeamsinfoRes getTeamsinfoRes=teamsDao.getTeaminfoByName(name);
             return getTeamsinfoRes;
         }catch(Exception exception){
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);

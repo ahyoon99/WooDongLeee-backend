@@ -39,4 +39,17 @@ public class TeamsController {
             return new BaseResponse<>((exception.getStatus()));
         }
     }
+
+    //팀 이름으로 조회
+    @ResponseBody
+    @GetMapping("/name")
+    public BaseResponse<GetTeamsinfoRes> getTeamsInfobyName(@RequestParam String name){
+        try{
+            GetTeamsinfoRes getTeamsinfoRes=teamsProvider.getTeamsByName(name);
+            return new BaseResponse<>(getTeamsinfoRes);
+        }catch(BaseException exception){
+            return new BaseResponse<>((exception.getStatus()));
+        }
+    }
+
 }

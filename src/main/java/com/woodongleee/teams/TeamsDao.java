@@ -1,7 +1,6 @@
 package com.woodongleee.teams;
 
 import com.woodongleee.teams.model.GetTeamsinfoRes;
-import com.woodongleee.teams.model.Teaminfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -28,6 +27,19 @@ public class TeamsDao {
                 rs.getBoolean("isRecruiting"),
                 rs.getString("status")
         ), town);
+    }
+
+    public GetTeamsinfoRes getTeaminfoByName(String name){
+        String getTeamsByNameQuery="SELECT * from TeamInfo where name=?";
+        return this.jdbcTemplate.queryForObject(getTeamsByNameQuery, (rs, rowNum)->new GetTeamsinfoRes(
+                rs.getInt("teamIdx"),
+                rs.getString("name"),
+                rs.getString("town"),
+                rs.getInt("teamScore"),
+                rs.getString("teamProfileImgURL"),
+                rs.getBoolean("isRecruiting"),
+                rs.getString("status")
+        ), name);
     }
 
 }
