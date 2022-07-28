@@ -127,6 +127,11 @@ public class UserMatchService {
                throw new BaseException(BaseResponseStatus.MATCH_ALREADY_EXIST); // 이미 용병 모집글이 작성된 경기입니다.
            }
 
+           if(userMatchDao.isOurMatch(userIdx, teamScheduleIdx) != 1){
+               throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // teamScheduleIdx가 다른 팀의 것입니다.
+           }
+
+           //우리팀 경기가 아닙니다 추가.. -> 잘못된 teamScheduleIdx
            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
            String startTime = createUserMatchPostPossibilityRes.getStartTime();
            String curTime = format.format(new Date());

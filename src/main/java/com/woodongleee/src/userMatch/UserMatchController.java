@@ -5,9 +5,12 @@ import com.woodongleee.config.BaseResponse;
 import com.woodongleee.config.BaseResponseStatus;
 import com.woodongleee.src.userMatch.Domain.CreateUserMatchPostReq;
 import com.woodongleee.src.userMatch.Domain.CreateUserMatchPostRes;
+import com.woodongleee.src.userMatch.Domain.GetUserMatchPostInfoRes;
 import com.woodongleee.utils.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("user-match")
@@ -32,24 +35,23 @@ public class UserMatchController {
     }
 
 
-    /*
 
-
-    // 용병 모집글 조회 API -> ?time 을 어떤 기준으로 필터링 할 지 애매해서 일단 킵..
+    // 용병 모집글 조회 API
     @GetMapping("")
-    public BaseResponse<List<MatchPostInfoRes>> getMatchPosts(@RequestParam(required = true) String town,
-                                                              @RequestParam(required = true) String date,
-                                                              @RequestParam(required = true) String time){
+    public BaseResponse<List<GetUserMatchPostInfoRes>> getUserMatchPosts(@RequestParam String town,
+                                                                         @RequestParam String startTime,
+                                                                         @RequestParam String endTime){
         try{
             int userIdx = jwtService.getUserIdx();
-
+            List<GetUserMatchPostInfoRes> MatchPosts = userMatchProvider.getUserMatchPosts(userIdx, town, startTime, endTime);
+            return new BaseResponse<>(MatchPosts);
         }
         catch(BaseException e){
             return new BaseResponse<>(e.getStatus());
         }
     }
 
-     */
+
 
     // 용병 신청 API
     @PostMapping("/{matchPostIdx}/apply")
