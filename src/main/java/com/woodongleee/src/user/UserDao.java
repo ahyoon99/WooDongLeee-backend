@@ -1,8 +1,6 @@
 package com.woodongleee.src.user;
 
-import com.woodongleee.src.user.model.CreateUserReq;
-import com.woodongleee.src.user.model.CreateUserRes;
-import com.woodongleee.src.user.model.VerifyDomain;
+import com.woodongleee.src.user.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -69,6 +67,15 @@ public class UserDao {
         String deleteDuplicatedEmailQuery = "delete from emailcode where email = ?";
         String deleteDuplicatedEmailParams = email;
         return this.jdbcTemplate.update(deleteDuplicatedEmailQuery, deleteDuplicatedEmailParams);
+    }
+
+    public UserLoginUserIdxAndPassword login(String id) {
+        String userLoginQuery = "select userIdx, password from user where id = ?";
+        String userLoginParams = id;
+        return this.jdbcTemplate.queryForObject(userLoginQuery,(rs, rowNum) -> new UserLoginUserIdxAndPassword(
+                        rs.getInt("userIdx"),
+                        rs.getString("password")),
+                userLoginParams);
     }
 }
 

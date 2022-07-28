@@ -4,6 +4,8 @@ import com.woodongleee.config.BaseException;
 import com.woodongleee.config.BaseResponse;
 import com.woodongleee.src.email.EmailService;
 import com.woodongleee.src.user.model.CreateUserReq;
+import com.woodongleee.src.user.model.UserLoginReq;
+import com.woodongleee.src.user.model.UserLoginRes;
 import com.woodongleee.utils.JwtService;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -101,5 +103,23 @@ public class UserController {
             return new BaseResponse<>(EMAIL_SERVER_ERROR);
         }
 
+    }
+
+    @ResponseBody
+    @PostMapping("/login")
+    public BaseResponse<UserLoginRes> login(@RequestBody UserLoginReq userLoginReq){
+        Object[] params = new Object[]{
+                userLoginReq.getId(),
+                userLoginReq.getPassword()
+        };
+        if(Arrays.stream(params).anyMatch(Objects::isNull)){
+            return new BaseResponse<>(EMPTY_PARAMETER);
+        }
+
+        try{
+            return new BaseResponse<>(userProvider.login(userLoginReq));
+        } catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
+        }
     }
 }
