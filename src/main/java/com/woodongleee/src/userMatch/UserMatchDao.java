@@ -147,5 +147,11 @@ public class UserMatchDao {
         ), Params);
     }
 
-    
+    public int isOurMatch(int userIdx, int teamScheduleIdx) {
+        String Query = "select if(homeIdx=(select U.teamIdx from User U join TeamInfo TI on U.teamIdx = TI.teamIdx where userIdx=? and isLeader='T'), 1, -1) as status\n" +
+                "from TeamSchedule\n" +
+                "where teamScheduleIdx=?;";
+        Object[] Params = new Object[] {userIdx, teamScheduleIdx};
+        return this.jdbcTemplate.queryForObject(Query, int.class, Params);
+    }
 }
