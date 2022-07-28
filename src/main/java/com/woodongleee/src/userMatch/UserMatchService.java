@@ -3,10 +3,7 @@ package com.woodongleee.src.userMatch;
 import com.woodongleee.config.BaseException;
 import com.woodongleee.config.BaseResponse;
 import com.woodongleee.config.BaseResponseStatus;
-import com.woodongleee.src.userMatch.Domain.CheckApplyingPossibilityRes;
-import com.woodongleee.src.userMatch.Domain.CheckCancelApplyingPossibilityRes;
-import com.woodongleee.src.userMatch.Domain.CheckCreateUserMatchPostPossibilityRes;
-import com.woodongleee.src.userMatch.Domain.CreateUserMatchPostRes;
+import com.woodongleee.src.userMatch.Domain.*;
 import com.woodongleee.utils.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -154,4 +151,6 @@ public class UserMatchService {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
     }
+
+
 }

@@ -3,9 +3,7 @@ package com.woodongleee.src.userMatch;
 import com.woodongleee.config.BaseException;
 import com.woodongleee.config.BaseResponse;
 import com.woodongleee.config.BaseResponseStatus;
-import com.woodongleee.src.userMatch.Domain.CreateUserMatchPostReq;
-import com.woodongleee.src.userMatch.Domain.CreateUserMatchPostRes;
-import com.woodongleee.src.userMatch.Domain.GetUserMatchPostInfoRes;
+import com.woodongleee.src.userMatch.Domain.*;
 import com.woodongleee.utils.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -26,14 +24,6 @@ public class UserMatchController {
         this.userMatchService = userMatchService;
         this.jwtService = jwtService;
     }
-
-    //postman 테스트용 jwt 발급 api
-    @GetMapping("/jwt/{userIdx}")
-    public BaseResponse<String> getJwt(@PathVariable("userIdx") int userIdx){
-        String jwt = jwtService.createJwt(userIdx);
-        return new BaseResponse<>(jwt);
-    }
-
 
 
     // 용병 모집글 조회 API
@@ -101,7 +91,10 @@ public class UserMatchController {
         catch (BaseException e){
             return new BaseResponse<>(e.getStatus());
         }
-
     }
+
+
+
+
 
 }
