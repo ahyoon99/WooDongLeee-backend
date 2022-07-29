@@ -39,19 +39,22 @@ public class TeamMatchController {
     @PostMapping("/{teamScheduleIdx}")
     public BaseResponse<PostTeamMatchPostsRes> createTeamMatchPosts(@PathVariable("teamScheduleIdx") int teamScheduleIdx, @RequestBody PostTeamMatchPostsReq postTeamMatchPostsReq){
         try {
+
+            // jwt 관련 부분은 merge 후, 테스트 해보겠습니다.
+//            int userIdxByJwt = jwtService.getUserIdx();
+//            if(postTeamMatchPostsReq.getUserIdx() != userIdxByJwt){
+//                return new BaseResponse<>(BaseResponseStatus.INVALID_USER_JWT);
+//            }
+
             if (postTeamMatchPostsReq.getContents().length() > 500) {     // 게시글의 길이에 대한 validation
                 return new BaseResponse<>(BaseResponseStatus.POST_POSTS_INVALID_CONTENTS);
             }
 
             BaseResponse<PostTeamMatchPostsRes> postTeamMatchPostsRes = teamMatchService.createTeamMatchPost(postTeamMatchPostsReq.getUserIdx(), postTeamMatchPostsReq);
             return postTeamMatchPostsRes;
-//            return new BaseResponse<>(postTeamMatchPostsRes);
 
         } catch (BaseException exception) {
             return new BaseResponse<>(exception.getStatus());
         }
-
-
-
     }
 }
