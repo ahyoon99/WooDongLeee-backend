@@ -71,11 +71,30 @@ public class UserDao {
 
     public UserLoginUserIdxAndPassword login(String id) {
         String userLoginQuery = "select userIdx, password from user where id = ?";
-        String userLoginParams = id;
         return this.jdbcTemplate.queryForObject(userLoginQuery,(rs, rowNum) -> new UserLoginUserIdxAndPassword(
                         rs.getInt("userIdx"),
                         rs.getString("password")),
-                userLoginParams);
+                id);
+    }
+
+    public GetUserByJwtRes getUserByJwt(int userIdx) {
+        String getUserByJwtQuery = "select U.name, age, gender, email, id, U.town, U.introduce, T.name as teamName, T.teamProfileImgUrl, U.status\n" +
+                "from user as U\n" +
+                "left join teaminfo T on U.teamIdx = T.teamIdx\n" +
+                "where U.userIdx = ?;";
+        return this.jdbcTemplate.queryForObject(getUserByJwtQuery, (rs,rowNum) -> new GetUserByJwtRes(
+                rs.getString("name"),
+                rs.getInt("age"),
+                rs.getString("gender"),
+                rs.getString("email"),
+                rs.getString("id"),
+                rs.getString("town"),
+                rs.getString("introduce"),
+                rs.getString("teamName"),
+                rs.getString("teamProfileImgUrl"),
+                rs.getString("status")),
+                userIdx
+        );
     }
 }
 
