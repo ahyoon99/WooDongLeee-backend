@@ -2,6 +2,7 @@ package com.woodongleee.teams;
 
 import com.fasterxml.jackson.databind.ser.Serializers;
 import com.woodongleee.config.BaseException;
+import com.woodongleee.config.BaseResponse;
 import com.woodongleee.config.BaseResponseStatus;
 import com.woodongleee.teams.model.GetTeamsinfoRes;
 import com.woodongleee.utils.JwtService;
@@ -19,7 +20,7 @@ public class TeamsProvider {
         this.jwtService=jwtService;
     }
 
-    public GetTeamsinfoRes getTeamsByTown(String town) throws BaseException{
+    public GetTeamsinfoRes getTeamsByTown(int userIdx, String town) throws BaseException{
         try{
             GetTeamsinfoRes getTeamsinfoRes=teamsDao.getTeaminfoByTown(town);
             return getTeamsinfoRes;
@@ -28,7 +29,7 @@ public class TeamsProvider {
         }
     }
 
-    public GetTeamsinfoRes getTeamsByName(String name) throws BaseException{
+    public GetTeamsinfoRes getTeamsByName(int userIdx, String name) throws BaseException{
         try{
             GetTeamsinfoRes getTeamsinfoRes=teamsDao.getTeaminfoByName(name);
             return getTeamsinfoRes;
@@ -36,5 +37,19 @@ public class TeamsProvider {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
     }
+
+    public GetTeamsinfoRes getTeaminfo(int userIdx, int teamIdx) throws BaseException{
+       // if(teamsDao.getTeaminfo(teamIdx).getTeamIdx()==0){
+       //     throw new BaseException(BaseResponseStatus.TEAM_DOES_NOT_EXIST);
+       // }
+        try{
+            GetTeamsinfoRes getTeamsinfoRes=teamsDao.getTeaminfo(teamIdx);
+            return getTeamsinfoRes;
+        }catch(Exception exception){
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+
+    }
+
 
 }

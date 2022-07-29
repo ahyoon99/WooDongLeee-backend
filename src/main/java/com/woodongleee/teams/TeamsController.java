@@ -2,12 +2,15 @@ package com.woodongleee.teams;
 
 import com.woodongleee.config.BaseException;
 import com.woodongleee.config.BaseResponse;
+import com.woodongleee.teams.model.GetTeamsScheduleRes;
 import com.woodongleee.teams.model.GetTeamsinfoRes;
 import com.woodongleee.utils.JwtService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/teams")
@@ -33,7 +36,8 @@ public class TeamsController {
     @GetMapping("")
     public BaseResponse<GetTeamsinfoRes> getTeamsInfobyTown(@RequestParam String town){
         try{
-            GetTeamsinfoRes getTeamsinfoRes=teamsProvider.getTeamsByTown(town);
+            int userIdxByJwt= jwtService.getUserIdx();
+            GetTeamsinfoRes getTeamsinfoRes=teamsProvider.getTeamsByTown(userIdxByJwt, town);
             return new BaseResponse<>(getTeamsinfoRes);
         }catch(BaseException exception){
             return new BaseResponse<>((exception.getStatus()));
@@ -45,11 +49,31 @@ public class TeamsController {
     @GetMapping("/name")
     public BaseResponse<GetTeamsinfoRes> getTeamsInfobyName(@RequestParam String name){
         try{
-            GetTeamsinfoRes getTeamsinfoRes=teamsProvider.getTeamsByName(name);
+            int userIdxByJwt= jwtService.getUserIdx();
+            GetTeamsinfoRes getTeamsinfoRes=teamsProvider.getTeamsByName(userIdxByJwt, name);
             return new BaseResponse<>(getTeamsinfoRes);
         }catch(BaseException exception){
             return new BaseResponse<>((exception.getStatus()));
         }
     }
 
+    //팀 정보 조회
+    @ResponseBody
+    @GetMapping("/{teamIdx}")
+    public BaseResponse<GetTeamsinfoRes> getTeaminfo(@PathVariable("teamIdx")int teamIdx){
+        try{
+            int userIdxByJwt= jwtService.getUserIdx();
+            GetTeamsinfoRes getTeamsinfoRes=teamsProvider.getTeaminfo(userIdxByJwt, teamIdx);
+            return new BaseResponse<>(getTeamsinfoRes);
+        }catch (BaseException exception){
+            return new BaseResponse<>((exception.getStatus()));
+        }
+    }
+
+    //팀 일정 전부 조회
+ //   @ResponseBody
+ //   @GetMapping("/{teamIdx}/schedule")
+ //   public BaseResponse<List<GetTeamsScheduleRes>> getTeamSchedule(@RequestParam String startDate, @RequestParam String endDate){
+ //
+ //   }
 }

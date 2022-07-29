@@ -16,6 +16,10 @@ public class TeamsDao {
         this.jdbcTemplate=new JdbcTemplate(dataSource);
     }
 
+    public int checkTeamIdxExist(int teamIdx){
+        String checkTeamIdxExistQuery="SELECT exists(select teamIdx from TeamInfo where teamIdx=?);";
+        return this.jdbcTemplate.queryForObject(checkTeamIdxExistQuery, int.class, teamIdx);
+    }
     public GetTeamsinfoRes getTeaminfoByTown(String town){
         String selectTeamsinfoquery="SELECT * from TeamInfo where town=?";
         return this.jdbcTemplate.queryForObject(selectTeamsinfoquery, (rs, rowNum) -> new GetTeamsinfoRes(
@@ -24,6 +28,7 @@ public class TeamsDao {
                 rs.getString("town"),
                 rs.getInt("teamScore"),
                 rs.getString("teamProfileImgURL"),
+                rs.getString("introduce"),
                 rs.getBoolean("isRecruiting"),
                 rs.getString("status")
         ), town);
@@ -37,9 +42,24 @@ public class TeamsDao {
                 rs.getString("town"),
                 rs.getInt("teamScore"),
                 rs.getString("teamProfileImgURL"),
+                rs.getString("introduce"),
                 rs.getBoolean("isRecruiting"),
                 rs.getString("status")
         ), name);
+    }
+
+    public GetTeamsinfoRes getTeaminfo(int teamIdx){
+        String getTeaminfoQuery="SELECT * from TeamInfo where teamIdx=?";
+        return this.jdbcTemplate.queryForObject(getTeaminfoQuery, (rs, rowNum)->new GetTeamsinfoRes(
+                rs.getInt("teamIdx"),
+                rs.getString("name"),
+                rs.getString("town"),
+                rs.getInt("teamScore"),
+                rs.getString("teamProfileImgURL"),
+                rs.getString("introduce"),
+                rs.getBoolean("isRecruiting"),
+                rs.getString("status")
+        ), teamIdx);
     }
 
 }
