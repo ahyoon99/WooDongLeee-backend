@@ -26,12 +26,21 @@ public enum BaseResponseStatus {
     // Common
     RESPONSE_ERROR(false, 3000, "값을 불러오는데 실패하였습니다."),
 
-
     /**
      * 4000 : Database, Server 오류
      */
     DATABASE_ERROR(false, 4000, "데이터베이스 연결에 실패하였습니다."),
-    SERVER_ERROR(false, 4001, "서버와의 연결에 실패하였습니다.");
+    SERVER_ERROR(false, 4001, "서버와의 연결에 실패하였습니다."),
+
+    /**
+     * 5000 : team-match
+     */
+    POST_POSTS_INVALID_CONTENTS(false, 5001, "내용의 글자수를 확인해주세요."),
+    ALREADY_EXIST_TEAM_MATCH_POST(false, 5002, "이미 팀 매칭글이 생성된 경기입니다."),
+    USER_NOT_LEADER(false, 5003, "리더만 가능한 기능입니다."),
+    NO_EXIST_TEAM_MATCH(false, 5004, "존재하지 않는 팀 일정(경기)입니다."),
+    FINISH_POST_PERIOD(false, 5005, "글 작성 기한이 지났습니다.");
+
 
     private final boolean isSuccess;
     private final int code;
