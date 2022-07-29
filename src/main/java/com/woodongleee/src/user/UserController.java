@@ -4,6 +4,7 @@ import com.woodongleee.config.BaseException;
 import com.woodongleee.config.BaseResponse;
 import com.woodongleee.src.email.EmailService;
 import com.woodongleee.src.user.model.CreateUserReq;
+import com.woodongleee.src.user.model.GetUserByJwtRes;
 import com.woodongleee.src.user.model.UserLoginReq;
 import com.woodongleee.src.user.model.UserLoginRes;
 import com.woodongleee.utils.JwtService;
@@ -119,6 +120,18 @@ public class UserController {
         try{
             return new BaseResponse<>(userProvider.login(userLoginReq));
         } catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @GetMapping()
+    public BaseResponse<GetUserByJwtRes> getUserByJwt(){
+        try {
+            int userIdx = jwtService.getUserIdx();
+            GetUserByJwtRes getUserByJwtRes = userProvider.getUserByJwt(userIdx);
+            return new BaseResponse<>(getUserByJwtRes);
+        } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
     }

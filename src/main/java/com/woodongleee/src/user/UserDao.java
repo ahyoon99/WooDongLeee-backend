@@ -77,5 +77,25 @@ public class UserDao {
                         rs.getString("password")),
                 userLoginParams);
     }
+
+    public GetUserByJwtRes getUserByJwt(int userIdx) {
+        String getUserByJwtQuery = "select U.name, age, gender, email, id, U.town, U.introduce, T.name as teamName, T.teamProfileImgUrl, U.status\n" +
+                "from user as U\n" +
+                "left join teaminfo T on U.teamIdx = T.teamIdx\n" +
+                "where U.userIdx = ?;";
+        return this.jdbcTemplate.queryForObject(getUserByJwtQuery, (rs,rowNum) -> new GetUserByJwtRes(
+                rs.getString("name"),
+                rs.getInt("age"),
+                rs.getString("gender"),
+                rs.getString("email"),
+                rs.getString("id"),
+                rs.getString("town"),
+                rs.getString("introduce"),
+                rs.getString("teamName"),
+                rs.getString("teamProfileImgUrl"),
+                rs.getString("status")),
+                userIdx
+        );
+    }
 }
 
