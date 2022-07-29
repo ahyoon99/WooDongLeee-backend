@@ -1,13 +1,9 @@
 package com.woodongleee.src.user;
 
 import com.woodongleee.config.BaseException;
-import com.woodongleee.config.BaseResponse;
-import com.woodongleee.config.BaseResponseStatus;
 import com.woodongleee.src.user.model.*;
 import com.woodongleee.utils.JwtService;
 import com.woodongleee.utils.SHA256;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;

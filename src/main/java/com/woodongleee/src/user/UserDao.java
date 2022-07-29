@@ -71,10 +71,11 @@ public class UserDao {
 
     public UserLoginUserIdxAndPassword login(String id) {
         String userLoginQuery = "select userIdx, password from user where id = ?";
+        String userLoginParams = id;
         return this.jdbcTemplate.queryForObject(userLoginQuery,(rs, rowNum) -> new UserLoginUserIdxAndPassword(
                         rs.getInt("userIdx"),
                         rs.getString("password")),
-                id);
+                userLoginParams);
     }
 
     public GetUserByJwtRes getUserByJwt(int userIdx) {
