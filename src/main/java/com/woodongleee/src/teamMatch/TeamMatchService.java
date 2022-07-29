@@ -39,17 +39,17 @@ public class TeamMatchService {
 
             // 1. 팀 매칭글 생성은 리더만 가능합니다.
             if(teamMatchDao.isLeader(userIdx).equals("F")){    // 사용자가 리더가 아닌 경우
-                return new BaseResponse<>(BaseResponseStatus.USER_NOT_LEADER);
+                return new BaseResponse<>(BaseResponseStatus.UNAUTHORIZED_ACCESS);
             }
 
             // 2. 이미 팀 매칭 글 생성이 완료된 경기입니다.
             if(teamMatchDao.existTeamMatchPost(postTeamMatchPostsReq) >= 1){    // 이미 팀 매칭글이 존재하는 경우
-                return new BaseResponse<>(BaseResponseStatus.ALREADY_EXIST_TEAM_MATCH_POST);
+                return new BaseResponse<>(BaseResponseStatus.MATCH_ALREADY_EXIST);
             }
 
             // 3. 존재하지 않는 팀 일정(경기)입니다.
             if(teamMatchDao.existTeamMatch(postTeamMatchPostsReq) == 0){    // 탐 일정이 존재하지 않는 경우
-                return new BaseResponse<>(BaseResponseStatus.NO_EXIST_TEAM_MATCH);
+                return new BaseResponse<>(BaseResponseStatus.SCHEDULE_DOES_NOT_EXIST);
             }
 
             // 4. 팀 매칭 글 작성 기한이 지났습니다. 경기 시작 2시간 전까지만 글 작성 가능.
@@ -68,7 +68,7 @@ public class TeamMatchService {
             now.setTime(date);
 
             if(startTime.compareTo(now)==-1){   // 팀 매칭 글 작성 기간이 지난 경우
-                return new BaseResponse<>(BaseResponseStatus.FINISH_POST_PERIOD);
+                return new BaseResponse<>(BaseResponseStatus.MATCH_CREATE_PERIOD_ERROR);
             }
 
             // <<< 위의 조건들 모두 만족 시, 팀 매칭 게시글 작성 >>

@@ -17,22 +17,14 @@ public class TeamMatchController {
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
     private final TeamMatchProvider teamMatchProvider;
-    @Autowired
     private final TeamMatchService teamMatchService;
-    @Autowired
     private final JwtService jwtService;
 
     public TeamMatchController(TeamMatchProvider teamMatchProvider, TeamMatchService teamMatchService, JwtService jwtService) {
         this.teamMatchProvider = teamMatchProvider;
         this.teamMatchService = teamMatchService;
         this.jwtService = jwtService;
-    }
-
-    @GetMapping("/test/{testId}")
-    public int test(@PathVariable int testId){
-        return testId;
     }
 
     @ResponseBody
