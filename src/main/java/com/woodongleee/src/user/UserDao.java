@@ -115,5 +115,21 @@ public class UserDao {
         return this.jdbcTemplate.update(updateUserQuery, updateUserParams);
 
     }
+
+    public int checkUserExist(int userIdx) {
+        String checkUserQuery = "select exists(select email from User where userIdx = ?)";
+        int checkUserParams = userIdx;
+        return this.jdbcTemplate.queryForObject(checkUserQuery,
+                int.class,
+                checkUserParams);
+    }
+
+    public String checkUserStatus(int userIdx) {
+        String checkUserStatusQuery = "select status from User where userIdx = ?)";
+        int checkUserParams = userIdx;
+        return this.jdbcTemplate.queryForObject(checkUserStatusQuery,
+                String.class,
+                checkUserParams);
+    }
 }
 
