@@ -73,8 +73,12 @@ public class UserController {
         if(!isRegexId(id)){
             return new BaseResponse<>(INVALID_ID_PATTERN);
         }
-        if(userProvider.isIdDuplicated(id)){
-            return new BaseResponse<>(DUPLICATED_ID);
+        try {
+            if(userProvider.isIdDuplicated(id)){
+                return new BaseResponse<>(DUPLICATED_ID);
+            }
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
         }
 
         return new BaseResponse<>("중복 검사 성공");
@@ -88,8 +92,12 @@ public class UserController {
         if(!isRegexEmail(email)){
             return new BaseResponse<>(INVALID_EMAIL_PATTERN);
         }
-        if(userProvider.isEmailDuplicated(email)){
-            return new BaseResponse<>(DUPLICATED_EMAIL);
+        try {
+            if(userProvider.isEmailDuplicated(email)){
+                return new BaseResponse<>(DUPLICATED_EMAIL);
+            }
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
         }
         try {
             String code = emailService.createKey();
