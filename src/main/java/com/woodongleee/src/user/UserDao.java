@@ -46,7 +46,7 @@ public class UserDao {
     }
 
     public VerifyDomain verify(String email) {
-        String verifyCodeQuery = "select email, code, expirationTime from emailcode where email = ?";
+        String verifyCodeQuery = "select email, code, expirationTime from EmailCode where email = ?";
         return this.jdbcTemplate.queryForObject(verifyCodeQuery, (rs, rowNum) -> new VerifyDomain(
                 rs.getString("email"),
                 rs.getString("code"),
@@ -56,7 +56,7 @@ public class UserDao {
     }
 
     public int isEmailVerifyCodeRequestDuplicated(String email) {
-        String isEmailVerifyCodeRequestDuplicatedQuery = "select exists(select email from emailcode where email = ?)";
+        String isEmailVerifyCodeRequestDuplicatedQuery = "select exists(select email from EmailCode where email = ?)";
         String checkEmailCodeRequestExistParams = email;
         return this.jdbcTemplate.queryForObject(isEmailVerifyCodeRequestDuplicatedQuery,
                 int.class,
@@ -64,13 +64,13 @@ public class UserDao {
     }
 
     public int deleteDuplicatedEmail(String email) {
-        String deleteDuplicatedEmailQuery = "delete from emailcode where email = ?";
+        String deleteDuplicatedEmailQuery = "delete from EmailCode where email = ?";
         String deleteDuplicatedEmailParams = email;
         return this.jdbcTemplate.update(deleteDuplicatedEmailQuery, deleteDuplicatedEmailParams);
     }
 
     public UserLoginUserIdxAndPassword login(String id) {
-        String userLoginQuery = "select userIdx, password from user where id = ?";
+        String userLoginQuery = "select userIdx, password from User where id = ?";
         String userLoginParams = id;
         return this.jdbcTemplate.queryForObject(userLoginQuery,(rs, rowNum) -> new UserLoginUserIdxAndPassword(
                         rs.getInt("userIdx"),
@@ -80,8 +80,8 @@ public class UserDao {
 
     public GetUserByJwtRes getUserByJwt(int userIdx) {
         String getUserByJwtQuery = "select U.name, age, gender, email, id, U.town, U.introduce, T.name as teamName, T.teamProfileImgUrl, U.status\n" +
-                "from user as U\n" +
-                "left join teaminfo T on U.teamIdx = T.teamIdx\n" +
+                "from User as U\n" +
+                "left join TeamInfo T on U.teamIdx = T.teamIdx\n" +
                 "where U.userIdx = ?;";
         return this.jdbcTemplate.queryForObject(getUserByJwtQuery, (rs,rowNum) -> new GetUserByJwtRes(
                 rs.getString("name"),
@@ -99,7 +99,7 @@ public class UserDao {
     }
 
     public int updateUser(int userIdx, UpdateUserReq updateUserReq) {
-        String updateUserQuery = "update user\n" +
+        String updateUserQuery = "update User\n" +
                 "set name = ?, age = ?, gender = ?, town = ?, introduce = ?, profileImgUrl = ?\n" +
                 "where userIdx = ?";
         Object[] updateUserParams = new Object[]{
