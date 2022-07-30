@@ -4,7 +4,6 @@ import com.woodongleee.src.userMatch.Domain.CheckApplyingPossibilityRes;
 import com.woodongleee.src.userMatch.Domain.CheckCancelApplyingPossibilityRes;
 import com.woodongleee.src.userMatch.Domain.CheckCreateUserMatchPostPossibilityRes;
 import com.woodongleee.src.userMatch.Domain.GetUserMatchPostInfoRes;
-import org.graalvm.compiler.nodes.memory.OnHeapMemoryAccess;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
