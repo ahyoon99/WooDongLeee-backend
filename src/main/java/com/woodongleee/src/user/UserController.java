@@ -3,10 +3,7 @@ package com.woodongleee.src.user;
 import com.woodongleee.config.BaseException;
 import com.woodongleee.config.BaseResponse;
 import com.woodongleee.src.email.EmailService;
-import com.woodongleee.src.user.model.CreateUserReq;
-import com.woodongleee.src.user.model.GetUserByJwtRes;
-import com.woodongleee.src.user.model.UserLoginReq;
-import com.woodongleee.src.user.model.UserLoginRes;
+import com.woodongleee.src.user.model.*;
 import com.woodongleee.utils.JwtService;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -131,6 +128,18 @@ public class UserController {
             int userIdx = jwtService.getUserIdx();
             GetUserByJwtRes getUserByJwtRes = userProvider.getUserByJwt(userIdx);
             return new BaseResponse<>(getUserByJwtRes);
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @PatchMapping()
+    public BaseResponse<String> updateUser(@RequestBody UpdateUserReq updateUserReq){
+        try{
+            int userIdx = jwtService.getUserIdx();
+            userService.updateUser(userIdx, updateUserReq);
+            return new BaseResponse<>("수정이 완료되었습니다.");
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }

@@ -97,5 +97,23 @@ public class UserDao {
                 userIdx
         );
     }
+
+    public int updateUser(int userIdx, UpdateUserReq updateUserReq) {
+        String updateUserQuery = "update user\n" +
+                "set name = ?, age = ?, gender = ?, town = ?, introduce = ?, profileImgUrl = ?\n" +
+                "where userIdx = ?";
+        Object[] updateUserParams = new Object[]{
+                updateUserReq.getName(),
+                updateUserReq.getAge(),
+                updateUserReq.getGender(),
+                updateUserReq.getTown(),
+                updateUserReq.getIntroduce(),
+                updateUserReq.getProfileImgUrl(),
+                userIdx
+        };
+
+        return this.jdbcTemplate.update(updateUserQuery, updateUserParams);
+
+    }
 }
 
