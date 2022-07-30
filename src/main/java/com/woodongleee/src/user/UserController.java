@@ -35,7 +35,6 @@ public class UserController {
     @ResponseBody
     @PostMapping
     public BaseResponse<String> createUser(@RequestBody CreateUserReq newUser){
-
         Object[] params = new Object[]{
                 newUser.getName(),
                 newUser.getAge(),
@@ -136,8 +135,19 @@ public class UserController {
     @ResponseBody
     @PatchMapping()
     public BaseResponse<String> updateUser(@RequestBody UpdateUserReq updateUserReq){
+        Object[] params = new Object[]{
+                updateUserReq.getName(),
+                updateUserReq.getAge(),
+                updateUserReq.getGender(),
+                updateUserReq.getTown(),
+        };
+        if(Arrays.stream(params).anyMatch(Objects::isNull)){
+            return new BaseResponse<>(EMPTY_PARAMETER);
+        }
+
         try{
             int userIdx = jwtService.getUserIdx();
+            userProvider.getUserByJwt(userIdx);
             userService.updateUser(userIdx, updateUserReq);
             return new BaseResponse<>("수정이 완료되었습니다.");
         } catch (BaseException e) {
