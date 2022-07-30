@@ -9,6 +9,8 @@ import com.woodongleee.utils.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class TeamsProvider {
     private final TeamsDao teamsDao;
@@ -20,9 +22,9 @@ public class TeamsProvider {
         this.jwtService=jwtService;
     }
 
-    public GetTeamsinfoRes getTeamsByTown(int userIdx, String town) throws BaseException{
+    public List<GetTeamsinfoRes> getTeamsByTown(int userIdx, String town) throws BaseException{
         try{
-            GetTeamsinfoRes getTeamsinfoRes=teamsDao.getTeaminfoByTown(town);
+            List<GetTeamsinfoRes> getTeamsinfoRes=teamsDao.getTeaminfoByTown(town);
             return getTeamsinfoRes;
         }catch(Exception exception){
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);

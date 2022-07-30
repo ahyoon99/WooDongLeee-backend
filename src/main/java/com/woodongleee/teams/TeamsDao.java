@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
+import java.util.List;
 
 @Repository
 public class TeamsDao {
@@ -20,9 +21,10 @@ public class TeamsDao {
         String checkTeamIdxExistQuery="SELECT exists(select teamIdx from TeamInfo where teamIdx=?);";
         return this.jdbcTemplate.queryForObject(checkTeamIdxExistQuery, int.class, teamIdx);
     }
-    public GetTeamsinfoRes getTeaminfoByTown(String town){
-        String selectTeamsinfoquery="SELECT * from TeamInfo where town=?";
-        return this.jdbcTemplate.queryForObject(selectTeamsinfoquery, (rs, rowNum) -> new GetTeamsinfoRes(
+
+    public List<GetTeamsinfoRes> getTeaminfoByTown(String town){
+        String selectTeamsinfoquery="SELECT * from TeamInfo where LOCATE(?, town)>0";
+        return this.jdbcTemplate.query(selectTeamsinfoquery, (rs, rowNum) -> new GetTeamsinfoRes(
                 rs.getInt("teamIdx"),
                 rs.getString("name"),
                 rs.getString("town"),

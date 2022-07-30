@@ -2,6 +2,7 @@ package com.woodongleee.teams;
 
 import com.woodongleee.config.BaseException;
 import com.woodongleee.config.BaseResponse;
+import com.woodongleee.config.BaseResponseStatus;
 import com.woodongleee.teams.model.GetTeamsScheduleRes;
 import com.woodongleee.teams.model.GetTeamsinfoRes;
 import com.woodongleee.utils.JwtService;
@@ -34,10 +35,10 @@ public class TeamsController {
     //동네로 팀 목록 조회
     @ResponseBody
     @GetMapping("")
-    public BaseResponse<GetTeamsinfoRes> getTeamsInfobyTown(@RequestParam String town){
+    public BaseResponse<List<GetTeamsinfoRes>> getTeamsInfobyTown(@RequestParam String town){
         try{
             int userIdxByJwt= jwtService.getUserIdx();
-            GetTeamsinfoRes getTeamsinfoRes=teamsProvider.getTeamsByTown(userIdxByJwt, town);
+            List<GetTeamsinfoRes> getTeamsinfoRes=teamsProvider.getTeamsByTown(userIdxByJwt, town);
             return new BaseResponse<>(getTeamsinfoRes);
         }catch(BaseException exception){
             return new BaseResponse<>((exception.getStatus()));

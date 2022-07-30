@@ -19,6 +19,7 @@ public class TeamsService {
         this.teamsProvider=teamsProvider;
         this.jwtService=jwtService;
     }
+
     public void getTeaminfo(int userIdx, int teamIdx) throws BaseException{
         try{
             if(teamsDao.checkTeamIdxExist(teamIdx)!=1){
