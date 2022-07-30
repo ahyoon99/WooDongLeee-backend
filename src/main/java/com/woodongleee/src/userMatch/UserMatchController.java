@@ -10,7 +10,11 @@ import com.woodongleee.utils.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+
+import static com.woodongleee.config.BaseResponseStatus.EMPTY_PARAMETER;
 
 @RestController
 @RequestMapping("user-match")
@@ -87,6 +91,14 @@ public class UserMatchController {
     @PostMapping("{teamScheduleIdx}")
     public BaseResponse<CreateUserMatchPostRes> createUserMatchPost(@RequestBody CreateUserMatchPostReq createUserMatchPostReq,
                                                                     @PathVariable int teamScheduleIdx){
+        Object[] params = new Object[]{
+                createUserMatchPostReq.getUserIdx(),
+                createUserMatchPostReq.getContents()
+        };
+        if(Arrays.stream(params).anyMatch(Objects::isNull)){
+            return new BaseResponse<>(EMPTY_PARAMETER);
+        }
+
         try{
             int userIdx = jwtService.getUserIdx();
             if(userIdx != createUserMatchPostReq.getUserIdx()){
@@ -107,6 +119,14 @@ public class UserMatchController {
     @PatchMapping("{teamScheduleIdx}")
     public BaseResponse<ModifyUserMatchPostRes> modifyUserMatchPost(@RequestBody ModifyUserMatchPostReq modifyUserMatchPostReq,
                                                                     @PathVariable int teamScheduleIdx){
+        Object[] params = new Object[]{
+                modifyUserMatchPostReq.getUserIdx(),
+                modifyUserMatchPostReq.getContents()
+        };
+        if(Arrays.stream(params).anyMatch(Objects::isNull)){
+            return new BaseResponse<>(EMPTY_PARAMETER);
+        }
+
         try{
             int userIdx = jwtService.getUserIdx();
             if(userIdx != modifyUserMatchPostReq.getUserIdx()){
