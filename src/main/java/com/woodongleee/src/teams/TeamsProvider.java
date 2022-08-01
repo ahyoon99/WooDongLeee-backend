@@ -1,10 +1,11 @@
-package com.woodongleee.teams;
+package com.woodongleee.src.teams;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
 import com.woodongleee.config.BaseException;
-import com.woodongleee.config.BaseResponse;
 import com.woodongleee.config.BaseResponseStatus;
-import com.woodongleee.teams.model.GetTeamsinfoRes;
+import com.woodongleee.src.teams.model.GetTeamsinfoRes;
+import com.woodongleee.src.teams.model.GetUserInfoRes;
+import com.woodongleee.src.teams.model.GetTeamScheduleInfoRes;
+import com.woodongleee.src.teams.model.GetTeamsScheduleRes;
 import com.woodongleee.utils.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,9 +42,6 @@ public class TeamsProvider {
     }
 
     public GetTeamsinfoRes getTeaminfo(int userIdx, int teamIdx) throws BaseException{
-       // if(teamsDao.getTeaminfo(teamIdx).getTeamIdx()==0){
-       //     throw new BaseException(BaseResponseStatus.TEAM_DOES_NOT_EXIST);
-       // }
         try{
             GetTeamsinfoRes getTeamsinfoRes=teamsDao.getTeaminfo(teamIdx);
             return getTeamsinfoRes;
@@ -51,6 +49,32 @@ public class TeamsProvider {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
 
+    }
+
+    public List<GetTeamsScheduleRes> getTeamsScheduleRes(int userIdx, int teamIdx, String startTime, String endTime) throws BaseException{
+        try{
+            List<GetTeamsScheduleRes> getTeamsScheduleRes=teamsDao.getTeamsScheduleRes(teamIdx, startTime, endTime);
+            return getTeamsScheduleRes;
+        }catch (Exception exception){
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
+    public GetTeamScheduleInfoRes getTeamScheduleInfoRes(int userIdx, int teamScheduleIdx) throws BaseException{
+        try{
+            GetTeamScheduleInfoRes getTeamScheduleInfoRes=teamsDao.getTeamScheduleInfoRes(teamScheduleIdx);
+            return getTeamScheduleInfoRes;
+        }catch (Exception exception){
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
+
+    public List<GetUserInfoRes> getUserInfoRes(int userIdx, int teamIdx) throws BaseException{
+        try{
+            List<GetUserInfoRes> getUserInfoRes=teamsDao.getUserInfoRes(teamIdx);
+            return getUserInfoRes;
+        }catch(Exception exception){
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
     }
 
 

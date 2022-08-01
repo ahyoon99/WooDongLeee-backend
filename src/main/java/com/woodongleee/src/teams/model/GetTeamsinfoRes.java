@@ -1,4 +1,4 @@
-package com.woodongleee.teams.model;
+package com.woodongleee.src.teams.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
