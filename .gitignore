@@ -1,4 +1,5 @@
 application.yml
+email.properties
 secret
 HELP.md
 .gradle
