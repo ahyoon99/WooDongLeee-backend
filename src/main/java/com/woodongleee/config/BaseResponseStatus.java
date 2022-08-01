@@ -36,7 +36,7 @@ public enum BaseResponseStatus {
     TEAM_APPLY_DOES_NOT_EXIST(false, 3037, "존재하지 않는 팀 참가신청입니다."),
     EMAIL_VERIFY_REQUEST_DOES_NOT_EXIST(false, 3038, "존재하지 않는 이메일 인증 신청입니다."),
     MATCH_APPLY_PERIOD_ERROR(false, 3040, "용병/팀 모집 기간이 아닙니다."),
-    MATCH_CREATE_PERIOD_ERROR(false, 3041, "용병/팀 모집글 작성 기간이 아닙니다."),
+    MATCH_CREATE_PERIOD_ERROR(false, 3041, "용병/팀 모집글/매칭글 작성 기간이 아닙니다."),
     MATCH_APPLY_VOTE_PERIOD_ERROR(false, 3042, "참가 신청 투표 기한이 지났습니다."),
     ACCEPT_NOT_AVAILABLE(false, 3043, "해당 요청을 승인 할 수 없습니다."),
     DECLINE_NOT_AVAILABLE(false, 3044, "해당 요청을 거절 할 수 없습니다."),
@@ -49,6 +49,7 @@ public enum BaseResponseStatus {
     NOT_TEAMMATE(false, 3061, "팀원이 아닙니다."),
     TEAM_DISMISSED(false, 3062, "이미 해체된 팀입니다."),
     MATCH_NOT_FINISHED(false, 3063, "아직 종료되지 않은 경기입니다."),
+    POST_POSTS_INVALID_CONTENTS(false, 6034, "내용의 글자수를 확인해주세요."),
 
     /**
      * 4000 : 서버 에러
