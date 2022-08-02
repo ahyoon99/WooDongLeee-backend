@@ -160,4 +160,10 @@ public class UserMatchDao {
         this.jdbcTemplate.update(Query, Params);
         return this.jdbcTemplate.queryForObject("select matchPostIdx from MatchPost where userIdx=? and teamScheduleIdx=?", int.class, new Object[] {userIdx, teamScheduleIdx});
     }
+
+    public void deleteUserMatchPost(int userIdx, int teamScheduleIdx) {
+        String Query = "delete from MatchPost where userIdx=? and teamScheduleIdx=?";
+        Object[] Params = new Object[] {userIdx, teamScheduleIdx};
+        this.jdbcTemplate.update(Query, Params);
+    }
 }

@@ -143,7 +143,20 @@ public class UserMatchController {
         }
     }
 
+    // 용병 모집글 삭제
+    @DeleteMapping("{teamScheduleIdx}")
+    public BaseResponse<String> deleteUserMatchPost(@PathVariable int teamScheduleIdx){
+        try{
+            int userIdx = jwtService.getUserIdx();
 
+            userMatchService.deleteUserMatchPost(userIdx, teamScheduleIdx);
+            String result = "용병 모집글 삭제를 완료하였습니다.";
+            return new BaseResponse<>(result);
+        }
+        catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
 
 
 

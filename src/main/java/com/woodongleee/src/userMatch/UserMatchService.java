@@ -155,7 +155,7 @@ public class UserMatchService {
 
             // 모집글 수정 가능 여부 확인은, 생성가능 여부 확인 방식과 다르지 않아 재사용
             CheckCreateUserMatchPostPossibilityRes createUserMatchPostPossibilityRes = userMatchDao.checkCreateMatchPostPossibility(userIdx, teamScheduleIdx);
-            if (createUserMatchPostPossibilityRes.getStatus() == -1) {
+            if (createUserMatchPostPossibilityRes.getStatus() != 1) {
                 throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // 용병 모집글이 작성되지 않았습니다.
             }
 
@@ -183,6 +183,32 @@ public class UserMatchService {
         } catch (Exception e) {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
+    }
+
+    public void deleteUserMatchPost(int userIdx, int teamScheduleIdx) throws BaseException{
+        try{
+            if (userMatchDao.isLeader(userIdx) != 1) {
+                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // 리더가 아닙니다.
+            }
+
+            // 모집글 삭제 가능 여부 확인은, 생성가능 여부 확인 방식과 다르지 않아 재사용
+            CheckCreateUserMatchPostPossibilityRes createUserMatchPostPossibilityRes = userMatchDao.checkCreateMatchPostPossibility(userIdx, teamScheduleIdx);
+            if (createUserMatchPostPossibilityRes.getStatus() != 1) {
+                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // 용병 모집글이 작성되지 않았습니다.
+            }
+
+            if (userMatchDao.isOurMatch(userIdx, teamScheduleIdx) != 1) {
+                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // teamScheduleIdx가 다른 팀의 것입니다.
+            }
+
+            userMatchDao.deleteUserMatchPost(userIdx, teamScheduleIdx);
+
+        } catch (BaseException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+
     }
 
 
