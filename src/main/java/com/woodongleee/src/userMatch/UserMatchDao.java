@@ -153,4 +153,11 @@ public class UserMatchDao {
         Object[] Params = new Object[] {userIdx, teamScheduleIdx};
         return this.jdbcTemplate.queryForObject(Query, int.class, Params);
     }
+
+    public int modifyUserMatchPost(int userIdx, int teamScheduleIdx, String contents) {
+        String Query = "update MatchPost set contents=? where userIdx=? and teamScheduleIdx=?;";
+        Object[] Params = new Object[] {contents, userIdx, teamScheduleIdx};
+        this.jdbcTemplate.update(Query, Params);
+        return this.jdbcTemplate.queryForObject("select matchPostIdx from MatchPost where userIdx=? and teamScheduleIdx=?", int.class, new Object[] {userIdx, teamScheduleIdx});
+    }
 }
