@@ -39,6 +39,11 @@ public class TeamMatchService {
     public BaseResponse<PostTeamMatchPostsRes> createTeamMatchPost(int userIdx, PostTeamMatchPostsReq postTeamMatchPostsReq) throws BaseException{
         try{
 
+            // 0. 탈퇴한 유저입니다.
+            if(teamMatchDao.checkUserStatus(userIdx).equals("INACTIVE")){   // 사용자가 탈퇴한 회원인 경우
+                return new BaseResponse<>(BaseResponseStatus.LEAVED_USER);
+            }
+
             // 1. 팀 매칭글 생성은 리더만 가능합니다.
             if(teamMatchDao.isLeader(userIdx).equals("F")){    // 사용자가 리더가 아닌 경우
                 return new BaseResponse<>(BaseResponseStatus.UNAUTHORIZED_ACCESS);
@@ -55,7 +60,7 @@ public class TeamMatchService {
             }
 
             // 4. 팀 매칭 글 작성 기한이 지났습니다. 경기 시작 2시간 전까지만 글 작성 가능.
-            String start = teamMatchDao.checkPostPeriod(postTeamMatchPostsReq.getTeamScheduleIdx());
+            String start = teamMatchDao.selectStartTime(postTeamMatchPostsReq.getTeamScheduleIdx());
             SimpleDateFormat formatedTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
             Date startDate = formatedTime.parse(start);     // 경기 시작 시간 세팅하기
@@ -84,6 +89,12 @@ public class TeamMatchService {
 
     public BaseResponse<ModifyTeamMatchPostsRes> modifyTeamMatchPost(ModifyTeamMatchPostsReq modifyTeamMatchPostsReq, int matchPostIdx) throws BaseException {
         try{
+
+            // 0. 탈퇴한 유저입니다.
+            if(teamMatchDao.checkUserStatus(modifyTeamMatchPostsReq.getUserIdx()).equals("INACTIVE")){   // 사용자가 탈퇴한 회원인 경우
+                return new BaseResponse<>(BaseResponseStatus.LEAVED_USER);
+            }
+
             // 1. 팀 매칭글 수정은 리더만 가능합니다.
             if(teamMatchDao.isLeader(modifyTeamMatchPostsReq.getUserIdx()).equals("F")){  // 사용자가 리더가 아닌 경우
                 return new BaseResponse<>(BaseResponseStatus.UNAUTHORIZED_ACCESS);
@@ -105,7 +116,7 @@ public class TeamMatchService {
             }
 
             // 5. 팀 매칭 글 수정 기한이 지났습니다. 경기 시작 2시간 전까지만 글 작성 가능.
-            String start = teamMatchDao.checkPostPeriod(modifyTeamMatchPostsReq.getTeamScheduleIdx());
+            String start = teamMatchDao.selectStartTime(modifyTeamMatchPostsReq.getTeamScheduleIdx());
             SimpleDateFormat formatedTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
             Date startDate = formatedTime.parse(start);     // 경기 시작 시간 세팅하기

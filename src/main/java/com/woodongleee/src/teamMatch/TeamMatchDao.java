@@ -37,6 +37,13 @@ public class TeamMatchDao {
         return this.jdbcTemplate.queryForObject(existTeamMatchPostQuery, int.class, existTeamMatchPostParams);
     }
 
+    // 사용자가 탈퇴한 회원인지 확인하기
+    public String checkUserStatus(int userIdx) {
+        String checkUserStatusQuery = "select status from User where userIdx=?";
+        int checkUserStatusParams = userIdx;
+        return this.jdbcTemplate.queryForObject(checkUserStatusQuery, String.class, checkUserStatusParams);
+    }
+
     // 사용자가 리더인지 확인하기
     public String isLeader(int userIdx) {  // 사용자가 리더가 아닌 경우, 0 리턴
         String isLeaderQuery = "select isLeader from User where userIdx=?";
@@ -52,10 +59,10 @@ public class TeamMatchDao {
     }
 
     // 팀 매칭 글 작성 기간 확인하기
-    public String checkPostPeriod(int teamScheduleIdx) throws ParseException {   // 팀 매칭 글 작성 기간이 지난 경우, 0 리턴
-        String checkPostPeriodQuery = "select startTime from teamSchedule where teamScheduleIdx=?";
-        int checkPostPeriodParams = teamScheduleIdx;
-        return this.jdbcTemplate.queryForObject(checkPostPeriodQuery, String.class, checkPostPeriodParams);
+    public String selectStartTime(int teamScheduleIdx) throws ParseException {   // 팀 매칭 글 작성 기간이 지난 경우, 0 리턴
+        String selectStartTimeQuery = "select startTime from teamSchedule where teamScheduleIdx=?";
+        int selectStartTimeParams = teamScheduleIdx;
+        return this.jdbcTemplate.queryForObject(selectStartTimeQuery, String.class, selectStartTimeParams);
     }
 
     // 팀 매칭글 작성자 확인하기
