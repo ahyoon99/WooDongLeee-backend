@@ -125,11 +125,17 @@ public class UserDao {
     }
 
     public String checkUserStatus(int userIdx) {
-        String checkUserStatusQuery = "select status from User where userIdx = ?)";
+        String checkUserStatusQuery = "select status from User where userIdx = ?";
         int checkUserParams = userIdx;
         return this.jdbcTemplate.queryForObject(checkUserStatusQuery,
                 String.class,
                 checkUserParams);
+    }
+
+    public int updateId(int userIdx, String id) {
+        String updateIdQuery = "update User set id  = ?";
+        String updateIdParam = id;
+        return this.jdbcTemplate.queryForObject(updateIdQuery, int.class, updateIdParam);
     }
 }
 

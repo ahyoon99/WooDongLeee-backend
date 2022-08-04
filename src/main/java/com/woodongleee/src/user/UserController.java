@@ -5,6 +5,7 @@ import com.woodongleee.config.BaseResponse;
 import com.woodongleee.src.email.EmailService;
 import com.woodongleee.src.user.model.*;
 import com.woodongleee.utils.JwtService;
+import com.woodongleee.utils.ValidationRegex;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -152,14 +153,31 @@ public class UserController {
         if(Arrays.stream(params).anyMatch(Objects::isNull)){
             return new BaseResponse<>(EMPTY_PARAMETER);
         }
-
         try{
             int userIdx = jwtService.getUserIdx();
-            userProvider.getUserByJwt(userIdx);
             userService.updateUser(userIdx, updateUserReq);
             return new BaseResponse<>("수정이 완료되었습니다.");
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
     }
+
+    @ResponseBody
+    @PatchMapping("/{userIdx}/id")
+    public BaseResponse<String> updateId(@RequestBody String id){
+        if(id == null){
+            return new BaseResponse<>(EMPTY_PARAMETER);
+        }
+        if(!isRegexId(id)){
+            return new BaseResponse<>(INVALID_ID_PATTERN);
+        }
+        try{
+            int userIdx = jwtService.getUserIdx();
+            userService.updateId(userIdx, id);
+            return new BaseResponse<>("수정이 완료되었습니다.");
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
 }
