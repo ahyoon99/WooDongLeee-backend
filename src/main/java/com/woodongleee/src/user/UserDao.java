@@ -133,9 +133,9 @@ public class UserDao {
     }
 
     public int updateId(int userIdx, String id) {
-        String updateIdQuery = "update User set id  = ?";
-        String updateIdParam = id;
-        return this.jdbcTemplate.queryForObject(updateIdQuery, int.class, updateIdParam);
+        String updateIdQuery = "update User set id  = ? where userIdx = ?";
+        Object[] updateIdParam = new Object[]{id,userIdx};
+        return this.jdbcTemplate.update(updateIdQuery, updateIdParam);
     }
 }
 

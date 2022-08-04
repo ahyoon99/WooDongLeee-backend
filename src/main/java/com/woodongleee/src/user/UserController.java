@@ -6,6 +6,7 @@ import com.woodongleee.src.email.EmailService;
 import com.woodongleee.src.user.model.*;
 import com.woodongleee.utils.JwtService;
 import com.woodongleee.utils.ValidationRegex;
+import org.hibernate.sql.Update;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -163,8 +164,9 @@ public class UserController {
     }
 
     @ResponseBody
-    @PatchMapping("/{userIdx}/id")
-    public BaseResponse<String> updateId(@RequestBody String id){
+    @PatchMapping("/id")
+    public BaseResponse<String> updateId(@RequestBody UpdateIdReq updateIdReq){
+        String id = updateIdReq.getId();
         if(id == null){
             return new BaseResponse<>(EMPTY_PARAMETER);
         }

@@ -104,6 +104,5 @@ public class UserService {
         } catch (Exception exception){
             throw new BaseException(DATABASE_ERROR);
         }
-
     }
 }
