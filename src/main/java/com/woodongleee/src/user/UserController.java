@@ -162,4 +162,21 @@ public class UserController {
             return new BaseResponse<>(e.getStatus());
         }
     }
+
+    @ResponseBody
+    @PatchMapping("/pwd")
+    public BaseResponse<String> updatePassword(@RequestBody UpdatePasswordReq updatePasswordReq){
+        String currentPassword = updatePasswordReq.getCurrentPassword();
+        String newPassword = updatePasswordReq.getNewPassword();
+        if(newPassword == null || currentPassword == null){
+            return new BaseResponse<>(EMPTY_PARAMETER);
+        }
+        try{
+            int userIdx = jwtService.getUserIdx();
+            userService.updatePassword(userIdx, updatePasswordReq);
+            return new BaseResponse<>("수정이 완료되었습니다.");
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
 }
