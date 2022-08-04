@@ -4,8 +4,7 @@ import com.woodongleee.config.BaseException;
 import com.woodongleee.config.BaseResponse;
 import com.woodongleee.config.BaseResponseStatus;
 import com.woodongleee.src.user.UserProvider;
-import com.woodongleee.src.user.model.GetUserByJwtRes;
-import com.woodongleee.src.userMatch.Domain.*;
+import com.woodongleee.src.userMatch.model.*;
 import com.woodongleee.utils.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -152,6 +151,19 @@ public class UserMatchController {
             userMatchService.deleteUserMatchPost(userIdx, teamScheduleIdx);
             String result = "용병 모집글 삭제를 완료하였습니다.";
             return new BaseResponse<>(result);
+        }
+        catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    // 용병 신청 목록 조회
+    @GetMapping("{teamScheduleIdx}/apply")
+    public BaseResponse<List<UserMatchApplyInfo>> getUserMatchApplyList(@PathVariable int teamScheduleIdx){
+        try{
+            int userIdx = jwtService.getUserIdx();
+            List<UserMatchApplyInfo> userMatchApplyInfoList = userMatchProvider.getUserMatchApplyList(userIdx, teamScheduleIdx);
+            return new BaseResponse<>(userMatchApplyInfoList);
         }
         catch (BaseException e){
             return new BaseResponse<>(e.getStatus());

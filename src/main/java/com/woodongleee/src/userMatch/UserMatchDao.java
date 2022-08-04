@@ -1,9 +1,6 @@
 package com.woodongleee.src.userMatch;
 
-import com.woodongleee.src.userMatch.Domain.CheckApplyingPossibilityRes;
-import com.woodongleee.src.userMatch.Domain.CheckCancelApplyingPossibilityRes;
-import com.woodongleee.src.userMatch.Domain.CheckCreateUserMatchPostPossibilityRes;
-import com.woodongleee.src.userMatch.Domain.GetUserMatchPostInfoRes;
+import com.woodongleee.src.userMatch.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -165,5 +162,24 @@ public class UserMatchDao {
         String Query = "delete from MatchPost where userIdx=? and teamScheduleIdx=?";
         Object[] Params = new Object[] {userIdx, teamScheduleIdx};
         this.jdbcTemplate.update(Query, Params);
+    }
+
+    public int existsMatchPost(int teamScheduleIdx) {
+        String Query = "select exists(select matchPostIdx from MatchPost where teamScheduleIdx=?);";
+        return this.jdbcTemplate.queryForObject(Query, int.class, teamScheduleIdx);
+    }
+
+    public List<UserMatchApplyInfo> getUserMatchApplyList(int teamScheduleIdx) {
+        String Query = "select matchApplyIdx, MA.matchPostIdx, U.userIdx, U.name, MA.status from MatchApply MA\n" +
+                "join User U on MA.userIdx = U.userIdx\n" +
+                "join MatchPost MP on MA.matchPostIdx = MP.matchPostIdx\n" +
+                "where teamScheduleIdx=?;";
+        return this.jdbcTemplate.query(Query, (rs, rowNum) -> new UserMatchApplyInfo(
+                rs.getInt("matchApplyIdx"),
+                rs.getInt("matchPostIdx"),
+                rs.getInt("userIdx"),
+                rs.getString("name"),
+                rs.getString("status")
+        ), teamScheduleIdx);
     }
 }
