@@ -5,6 +5,8 @@ import com.woodongleee.config.BaseResponse;
 import com.woodongleee.src.email.EmailService;
 import com.woodongleee.src.user.model.*;
 import com.woodongleee.utils.JwtService;
+import com.woodongleee.utils.ValidationRegex;
+import org.hibernate.sql.Update;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -152,10 +154,8 @@ public class UserController {
         if(Arrays.stream(params).anyMatch(Objects::isNull)){
             return new BaseResponse<>(EMPTY_PARAMETER);
         }
-
         try{
             int userIdx = jwtService.getUserIdx();
-            userProvider.getUserByJwt(userIdx);
             userService.updateUser(userIdx, updateUserReq);
             return new BaseResponse<>("수정이 완료되었습니다.");
         } catch (BaseException e) {
@@ -171,9 +171,28 @@ public class UserController {
         if(newPassword == null || currentPassword == null){
             return new BaseResponse<>(EMPTY_PARAMETER);
         }
-        try{
+        try {
             int userIdx = jwtService.getUserIdx();
             userService.updatePassword(userIdx, updatePasswordReq);
+            return new BaseResponse<>("수정이 완료되었습니다.");
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @PatchMapping("/id")
+    public BaseResponse<String> updateId(@RequestBody UpdateIdReq updateIdReq){
+        String id = updateIdReq.getId();
+        if(id == null){
+            return new BaseResponse<>(EMPTY_PARAMETER);
+        }
+        if(!isRegexId(id)){
+            return new BaseResponse<>(INVALID_ID_PATTERN);
+        }
+        try{
+            int userIdx = jwtService.getUserIdx();
+            userService.updateId(userIdx, id);
             return new BaseResponse<>("수정이 완료되었습니다.");
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
