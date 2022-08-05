@@ -4,8 +4,7 @@ import com.woodongleee.config.BaseException;
 import com.woodongleee.config.BaseResponse;
 import com.woodongleee.config.BaseResponseStatus;
 import com.woodongleee.src.user.UserProvider;
-import com.woodongleee.src.user.model.GetUserByJwtRes;
-import com.woodongleee.src.userMatch.Domain.*;
+import com.woodongleee.src.userMatch.model.*;
 import com.woodongleee.utils.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import static com.woodongleee.config.BaseResponseStatus.EMPTY_PARAMETER;
+import static com.woodongleee.config.BaseResponseStatus.*;
 
 @RestController
 @RequestMapping("user-match")
@@ -42,7 +41,12 @@ public class UserMatchController {
                                                                          @RequestParam String endTime){
         try{
             int userIdx = jwtService.getUserIdx();
-            //GetUserByJwtRes getUserByJwtRes = userProvider.getUserByJwt(userIdx);
+            if(userProvider.checkUserExist(userIdx) == 0){
+                throw new BaseException(USER_DOES_NOT_EXIST);
+            }
+            if(userProvider.checkUserStatus(userIdx).equals("INACTIVE")){
+                throw new BaseException(LEAVED_USER);
+            }
 
             List<GetUserMatchPostInfoRes> MatchPosts = userMatchProvider.getUserMatchPosts(userIdx, town, startTime, endTime);
             return new BaseResponse<>(MatchPosts);
@@ -59,7 +63,12 @@ public class UserMatchController {
     public BaseResponse<String> applyUserMatch(@PathVariable("matchPostIdx") int matchPostIdx){
         try{
             int userIdx = jwtService.getUserIdx();
-            //GetUserByJwtRes getUserByJwtRes = userProvider.getUserByJwt(userIdx);
+            if(userProvider.checkUserExist(userIdx) == 0){
+                throw new BaseException(USER_DOES_NOT_EXIST);
+            }
+            if(userProvider.checkUserStatus(userIdx).equals("INACTIVE")){
+                throw new BaseException(LEAVED_USER);
+            }
 
             userMatchService.applyUserMatch(userIdx, matchPostIdx);
             String result = "용병 신청을 성공하였습니다.";
@@ -75,7 +84,12 @@ public class UserMatchController {
     public BaseResponse<String> cancelApplyUserMatch(@PathVariable("matchPostIdx") int matchPostIdx){
         try{
             int userIdx = jwtService.getUserIdx();
-            //GetUserByJwtRes getUserByJwtRes = userProvider.getUserByJwt(userIdx);
+            if(userProvider.checkUserExist(userIdx) == 0){
+                throw new BaseException(USER_DOES_NOT_EXIST);
+            }
+            if(userProvider.checkUserStatus(userIdx).equals("INACTIVE")){
+                throw new BaseException(LEAVED_USER);
+            }
 
             userMatchService.cancelApplyUserMatch(userIdx, matchPostIdx);
             String result = "용병 신청을 취소하였습니다.";
@@ -104,7 +118,12 @@ public class UserMatchController {
             if(userIdx != createUserMatchPostReq.getUserIdx()){
                 return new BaseResponse<>(BaseResponseStatus.INVALID_JWT);
             }
-            //GetUserByJwtRes getUserByJwtRes = userProvider.getUserByJwt(userIdx);
+            if(userProvider.checkUserExist(userIdx) == 0){
+                throw new BaseException(USER_DOES_NOT_EXIST);
+            }
+            if(userProvider.checkUserStatus(userIdx).equals("INACTIVE")){
+                throw new BaseException(LEAVED_USER);
+            }
 
             return userMatchService.createUserMatchPost(userIdx, teamScheduleIdx, createUserMatchPostReq.getContents());
 
@@ -132,7 +151,12 @@ public class UserMatchController {
             if(userIdx != modifyUserMatchPostReq.getUserIdx()){
                 return new BaseResponse<>(BaseResponseStatus.INVALID_JWT);
             }
-            //GetUserByJwtRes getUserByJwtRes = userProvider.getUserByJwt(userIdx);
+            if(userProvider.checkUserExist(userIdx) == 0){
+                throw new BaseException(USER_DOES_NOT_EXIST);
+            }
+            if(userProvider.checkUserStatus(userIdx).equals("INACTIVE")){
+                throw new BaseException(LEAVED_USER);
+            }
 
             return userMatchService.modifyUserMatchPost(userIdx, teamScheduleIdx, modifyUserMatchPostReq.getContents());
 
@@ -143,7 +167,46 @@ public class UserMatchController {
         }
     }
 
+    // 용병 모집글 삭제
+    @DeleteMapping("{teamScheduleIdx}")
+    public BaseResponse<String> deleteUserMatchPost(@PathVariable int teamScheduleIdx){
+        try{
+            int userIdx = jwtService.getUserIdx();
+            if(userProvider.checkUserExist(userIdx) == 0){
+                throw new BaseException(USER_DOES_NOT_EXIST);
+            }
+            if(userProvider.checkUserStatus(userIdx).equals("INACTIVE")){
+                throw new BaseException(LEAVED_USER);
+            }
 
+            userMatchService.deleteUserMatchPost(userIdx, teamScheduleIdx);
+            String result = "용병 모집글 삭제를 완료하였습니다.";
+            return new BaseResponse<>(result);
+        }
+        catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    // 용병 신청 목록 조회
+    @GetMapping("{teamScheduleIdx}/apply")
+    public BaseResponse<List<UserMatchApplyInfo>> getUserMatchApplyList(@PathVariable int teamScheduleIdx){
+        try{
+            int userIdx = jwtService.getUserIdx();
+            if(userProvider.checkUserExist(userIdx) == 0){
+                throw new BaseException(USER_DOES_NOT_EXIST);
+            }
+            if(userProvider.checkUserStatus(userIdx).equals("INACTIVE")){
+                throw new BaseException(LEAVED_USER);
+            }
+
+            List<UserMatchApplyInfo> userMatchApplyInfoList = userMatchProvider.getUserMatchApplyList(userIdx, teamScheduleIdx);
+            return new BaseResponse<>(userMatchApplyInfoList);
+        }
+        catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
 
 
 

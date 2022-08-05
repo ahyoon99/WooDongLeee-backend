@@ -132,6 +132,20 @@ public class UserDao {
                 checkUserParams);
     }
 
+    public int updatePassword(int userIdx, String password) {
+        String updatePasswordQuery = "update User set password = ? where userIdx = ?";
+        Object[] updatePasswordPrams = new Object[] {password, userIdx};
+        return this.jdbcTemplate.update(updatePasswordQuery, updatePasswordPrams);
+    }
+
+    public String checkPassword(int userIdx) {
+        String checkPasswordQuery = "select password from User where userIdx = ?";
+        int checkPasswordParam = userIdx;
+        return this.jdbcTemplate.queryForObject(checkPasswordQuery,
+                String.class,
+                checkPasswordParam);
+    }
+
     public int updateId(int userIdx, String id) {
         String updateIdQuery = "update User set id  = ? where userIdx = ?";
         Object[] updateIdParam = new Object[]{id,userIdx};

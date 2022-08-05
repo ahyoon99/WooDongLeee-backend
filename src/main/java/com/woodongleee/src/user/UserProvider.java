@@ -114,4 +114,19 @@ public class UserProvider {
             throw new BaseException(DATABASE_ERROR);
         }
     }
+
+    public boolean checkPassword(int userIdx, String currentPassword) throws BaseException {
+        try{
+            //암호화
+            currentPassword = SHA256.encrypt(currentPassword);
+        } catch (Exception exception) {
+            throw new BaseException(PASSWORD_ENCRYPTION_ERROR);
+        }
+
+        try{
+            return userDao.checkPassword(userIdx).equals(currentPassword);
+        } catch (Exception e){
+            throw new BaseException(DATABASE_ERROR);
+        }
+    }
 }

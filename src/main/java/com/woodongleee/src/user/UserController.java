@@ -89,7 +89,7 @@ public class UserController {
     //이메일 중복 검사 + 인증
     @Transactional
     @ResponseBody
-    @GetMapping("/is-duplicated")
+    @GetMapping("/is-duplicated/email")
     public BaseResponse<String> isEmailDuplicated(@RequestParam String email){
         if(!isRegexEmail(email)){
             return new BaseResponse<>(INVALID_EMAIL_PATTERN);
@@ -164,6 +164,23 @@ public class UserController {
     }
 
     @ResponseBody
+    @PatchMapping("/pwd")
+    public BaseResponse<String> updatePassword(@RequestBody UpdatePasswordReq updatePasswordReq){
+        String currentPassword = updatePasswordReq.getCurrentPassword();
+        String newPassword = updatePasswordReq.getNewPassword();
+        if(newPassword == null || currentPassword == null){
+            return new BaseResponse<>(EMPTY_PARAMETER);
+        }
+        try {
+            int userIdx = jwtService.getUserIdx();
+            userService.updatePassword(userIdx, updatePasswordReq);
+            return new BaseResponse<>("수정이 완료되었습니다.");
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
     @PatchMapping("/id")
     public BaseResponse<String> updateId(@RequestBody UpdateIdReq updateIdReq){
         String id = updateIdReq.getId();
@@ -181,5 +198,4 @@ public class UserController {
             return new BaseResponse<>(e.getStatus());
         }
     }
-
 }
