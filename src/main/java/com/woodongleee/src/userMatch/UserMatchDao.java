@@ -182,4 +182,44 @@ public class UserMatchDao {
                 rs.getString("status")
         ), teamScheduleIdx);
     }
+
+    public void acceptUserMatchApply(int matchApplyIdx) {
+        // 신청 승인 -> MatchApply status 변경 -> 팀 스케쥴 인원 ++ -> 유저 스케쥴 추가
+        String Query1 = "update MatchApply MA, TeamSchedule TS\n" +
+                "set MA.status = 'ACCEPTED', TS.userMatchCnt = TS.userMatchCnt + 1\n" +
+                "where MA.matchApplyIdx=? and\n" +
+                "      TS.teamScheduleIdx=\n" +
+                "      (select teamScheduleIdx from (select MP.teamScheduleIdx from MatchApply join MatchPost MP on MP.matchPostIdx =\n" +
+                "                                                                      MatchApply.matchPostIdx where MatchApply.matchApplyIdx=?) T);"; // MatchApply status 변경 + 팀 스케쥴 인원 추가
+
+        String Query2 = "insert into UserSchedule(teamScheduleIdx, userIdx)\n" +
+                "values((select teamScheduleIdx from MatchApply MA join MatchPost MP on MA.matchPostIdx = MP.matchPostIdx where matchApplyIdx=?),\n" +
+                "       (select userIdx from MatchApply where matchApplyIdx=?));"; // 유저 스케쥴 추가
+        Object[] Params = new Object[]{matchApplyIdx, matchApplyIdx};
+
+        this.jdbcTemplate.update(Query1, Params);
+        this.jdbcTemplate.update(Query2, Params);
+
+    }
+
+    public CheckUserMatchApplyPossibilityRes checkUserMatchApplyPossibility(int userIdx, int matchApplyIdx) {
+        String Query = "select MA.status as applyStatus, (headCnt - joinCnt - userMatchCnt) as count, startTime,\n" +
+                "       if(homeIdx=(select U.teamIdx from User U where userIdx=?), 1, 0) as status\n" +
+                "from MatchApply MA\n" +
+                "join MatchPost MP on MA.matchPostIdx = MP.matchPostIdx\n" +
+                "join TeamSchedule TS on MP.teamScheduleIdx = TS.teamScheduleIdx\n" +
+                "where matchApplyIdx=?;";
+        Object[] Params = new Object[] {userIdx, matchApplyIdx};
+        return jdbcTemplate.queryForObject(Query, (rs, rowNum) -> new CheckUserMatchApplyPossibilityRes(
+                rs.getString("applyStatus"),
+                rs.getInt("count"),
+                rs.getString("startTime"),
+                rs.getInt("status")
+        ), Params);
+    }
+
+    public int existsMatchApply(int matchApplyIdx) {
+        String Query = "select exists(select userIdx from MatchApply where matchApplyIdx=?);";
+        return this.jdbcTemplate.queryForObject(Query, int.class, matchApplyIdx);
+    }
 }

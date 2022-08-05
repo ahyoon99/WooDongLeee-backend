@@ -12,8 +12,7 @@ import org.springframework.stereotype.Service;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static com.woodongleee.config.BaseResponseStatus.LEAVED_USER;
-import static com.woodongleee.config.BaseResponseStatus.USER_DOES_NOT_EXIST;
+import static com.woodongleee.config.BaseResponseStatus.*;
 
 @Service
 public class UserMatchService {
@@ -250,4 +249,54 @@ public class UserMatchService {
     }
 
 
+    public void acceptUserMatchApply(int userIdx, int matchApplyIdx) throws BaseException{
+        try{
+            if(userProvider.checkUserExist(userIdx) == 0){
+                throw new BaseException(USER_DOES_NOT_EXIST);
+            }
+            if(userProvider.checkUserStatus(userIdx).equals("INACTIVE")){
+                throw new BaseException(LEAVED_USER);
+            }
+
+            if (userMatchDao.isLeader(userIdx) != 1) {
+                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 리더가 아닙니다.
+            }
+
+            if (userMatchDao.existsMatchApply(matchApplyIdx) != 1){
+                throw new BaseException(ACCEPT_NOT_AVAILABLE); // matchApplyIdx가 잘못된 경우
+            }
+
+            CheckUserMatchApplyPossibilityRes checkUserMatchApplyPossibilityRes = userMatchDao.checkUserMatchApplyPossibility(userIdx, matchApplyIdx);
+
+            if(!checkUserMatchApplyPossibilityRes.getApplyStatus().equals("APPLIED")){
+                throw new BaseException(ACCEPT_NOT_AVAILABLE); // status가 applied 아닌 경우
+            }
+
+            if(checkUserMatchApplyPossibilityRes.getCount() <= 0){
+                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 신청 인원 마감된 경우
+            }
+
+            if(checkUserMatchApplyPossibilityRes.getStatus() != 1){
+                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 우리팀 경기에 대한 신청이 아닌 경우
+            }
+
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String startTime = checkUserMatchApplyPossibilityRes.getStartTime();
+            String curTime = format.format(new Date());
+            Date _startTime = format.parse(startTime);
+            Date _curTime = format.parse(curTime);
+            long diff = _startTime.getTime() - _curTime.getTime();
+            diff = (((diff / 1000) / 60) / 60);
+
+            if (diff <= 2) {
+                throw new BaseException(MATCH_APPLY_PERIOD_ERROR); // 신청 승인 기한이 지난 경우
+            }
+
+            userMatchDao.acceptUserMatchApply(matchApplyIdx); // 신청 승인
+        } catch (BaseException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
 }

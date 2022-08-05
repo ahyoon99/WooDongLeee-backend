@@ -166,6 +166,20 @@ public class UserMatchController {
         }
     }
 
+    // 용병 신청 승인
+    @PatchMapping("/apply/{MatchApplyIdx}/accept")
+    public BaseResponse<String> acceptUserMatchApply(@PathVariable int MatchApplyIdx){
+        try{
+            int userIdx = jwtService.getUserIdx();
+
+            userMatchService.acceptUserMatchApply(userIdx, MatchApplyIdx);
+            String result = "용병 매칭 신청을 승인 하였습니다.";
+            return new BaseResponse<>(result);
+        }
+        catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
 
 
 }
