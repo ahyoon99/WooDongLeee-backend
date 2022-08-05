@@ -1,4 +1,4 @@
-package com.woodongleee.src.userMatch.Domain;
+package com.woodongleee.src.userMatch.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
