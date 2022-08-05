@@ -185,16 +185,20 @@ public class UserMatchDao {
 
     public void acceptUserMatchApply(int matchApplyIdx) {
         // 신청 승인 -> MatchApply status 변경 -> 팀 스케쥴 인원 ++ -> 유저 스케쥴 추가
+
         String Query1 = "update MatchApply MA, TeamSchedule TS\n" +
                 "set MA.status = 'ACCEPTED', TS.userMatchCnt = TS.userMatchCnt + 1\n" +
                 "where MA.matchApplyIdx=? and\n" +
                 "      TS.teamScheduleIdx=\n" +
                 "      (select teamScheduleIdx from (select MP.teamScheduleIdx from MatchApply join MatchPost MP on MP.matchPostIdx =\n" +
-                "                                                                      MatchApply.matchPostIdx where MatchApply.matchApplyIdx=?) T);"; // MatchApply status 변경 + 팀 스케쥴 인원 추가
+                "                                                                      MatchApply.matchPostIdx where MatchApply.matchApplyIdx=?) T);";
+        // MatchApply status 변경 + 팀 스케쥴 인원 추가
 
         String Query2 = "insert into UserSchedule(teamScheduleIdx, userIdx)\n" +
                 "values((select teamScheduleIdx from MatchApply MA join MatchPost MP on MA.matchPostIdx = MP.matchPostIdx where matchApplyIdx=?),\n" +
-                "       (select userIdx from MatchApply where matchApplyIdx=?));"; // 유저 스케쥴 추가
+                "       (select userIdx from MatchApply where matchApplyIdx=?));";
+        // 유저 스케쥴 추가
+
         Object[] Params = new Object[]{matchApplyIdx, matchApplyIdx};
 
         this.jdbcTemplate.update(Query1, Params);
@@ -221,5 +225,10 @@ public class UserMatchDao {
     public int existsMatchApply(int matchApplyIdx) {
         String Query = "select exists(select userIdx from MatchApply where matchApplyIdx=?);";
         return this.jdbcTemplate.queryForObject(Query, int.class, matchApplyIdx);
+    }
+
+    public void rejectUserMatchApply(int matchApplyIdx) {
+        String Query = "update MatchApply set status='DENIED' where matchApplyIdx=?;";
+        this.jdbcTemplate.update(Query, matchApplyIdx);
     }
 }

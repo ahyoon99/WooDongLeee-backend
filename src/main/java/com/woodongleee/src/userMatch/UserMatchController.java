@@ -167,13 +167,27 @@ public class UserMatchController {
     }
 
     // 용병 신청 승인
-    @PatchMapping("/apply/{MatchApplyIdx}/accept")
-    public BaseResponse<String> acceptUserMatchApply(@PathVariable int MatchApplyIdx){
+    @PatchMapping("/apply/{matchApplyIdx}/accept")
+    public BaseResponse<String> acceptUserMatchApply(@PathVariable int matchApplyIdx){
         try{
             int userIdx = jwtService.getUserIdx();
 
-            userMatchService.acceptUserMatchApply(userIdx, MatchApplyIdx);
+            userMatchService.acceptUserMatchApply(userIdx, matchApplyIdx);
             String result = "용병 매칭 신청을 승인 하였습니다.";
+            return new BaseResponse<>(result);
+        }
+        catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @PatchMapping("/apply/{matchApplyIdx}/reject")
+    public BaseResponse<String> rejectUserMatchApply(@PathVariable int matchApplyIdx){
+        try{
+            int userIdx = jwtService.getUserIdx();
+
+            userMatchService.rejectUserMatchApply(userIdx, matchApplyIdx);
+            String result = "용병 매칭 신청을 거절 하였습니다.";
             return new BaseResponse<>(result);
         }
         catch (BaseException e){

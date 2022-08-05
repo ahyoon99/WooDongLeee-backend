@@ -91,17 +91,17 @@ public class UserMatchService {
             }
 
             if (userMatchDao.checkMatchPostExist(matchPostIdx) != 1) {
-                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // 존재하지 않는 matchPostIdx
+                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 존재하지 않는 matchPostIdx
             }
 
             if (userMatchDao.checkMatchApplyExist(userIdx, matchPostIdx) != 1) {
-                throw new BaseException(BaseResponseStatus.MATCH_APPLY_DOES_NOT_EXIST); // 존재하지 않는 매칭신청입니다.
+                throw new BaseException(MATCH_APPLY_DOES_NOT_EXIST); // 존재하지 않는 매칭신청입니다.
             }
 
             CheckCancelApplyingPossibilityRes checkCancelApplyingPossibilityRes = userMatchDao.checkCancelApplyingPossibility(userIdx, matchPostIdx);
 
-            if (checkCancelApplyingPossibilityRes.getStatus().equals("CANCELED")) {
-                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // 이미 취소된 신청입니다.
+            if (checkCancelApplyingPossibilityRes.getStatus().equals("CANCELED") || checkCancelApplyingPossibilityRes.getStatus().equals("ACCEPTED")) {
+                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 이미 취소된 경우 or 이미 참여 결정된 경우
             }
 
 
@@ -114,7 +114,7 @@ public class UserMatchService {
             diff = (((diff / 1000) / 60) / 60);
 
             if (diff <= 2) {
-                throw new BaseException(BaseResponseStatus.MATCH_APPLY_PERIOD_ERROR); // 용병 모집 기한이 지난 경기입니다.
+                throw new BaseException(MATCH_APPLY_PERIOD_ERROR); // 용병 모집 기한이 지난 경기입니다.
             }
 
             userMatchDao.cancelApplyUserMatch(userIdx, matchPostIdx);
@@ -293,6 +293,54 @@ public class UserMatchService {
             }
 
             userMatchDao.acceptUserMatchApply(matchApplyIdx); // 신청 승인
+        } catch (BaseException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
+
+    public void rejectUserMatchApply(int userIdx, int matchApplyIdx) throws BaseException{
+        try {
+            if(userProvider.checkUserExist(userIdx) == 0){
+                throw new BaseException(USER_DOES_NOT_EXIST);
+            }
+            if(userProvider.checkUserStatus(userIdx).equals("INACTIVE")){
+                throw new BaseException(LEAVED_USER);
+            }
+
+            if (userMatchDao.isLeader(userIdx) != 1) {
+                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 리더가 아닙니다.
+            }
+
+            if (userMatchDao.existsMatchApply(matchApplyIdx) != 1){
+                throw new BaseException(ACCEPT_NOT_AVAILABLE); // matchApplyIdx가 잘못된 경우
+            }
+
+            CheckUserMatchApplyPossibilityRes checkUserMatchApplyPossibilityRes = userMatchDao.checkUserMatchApplyPossibility(userIdx, matchApplyIdx);
+
+            if(checkUserMatchApplyPossibilityRes.getApplyStatus().equals("CANCELED") || checkUserMatchApplyPossibilityRes.getApplyStatus().equals("DENIED")){
+                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 신청이 취소된 경우 or 이미 거절한 경우
+            }
+
+            if(checkUserMatchApplyPossibilityRes.getStatus() != 1){
+                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 우리팀 경기에 대한 신청이 아닌 경우
+            }
+
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String startTime = checkUserMatchApplyPossibilityRes.getStartTime();
+            String curTime = format.format(new Date());
+            Date _startTime = format.parse(startTime);
+            Date _curTime = format.parse(curTime);
+            long diff = _startTime.getTime() - _curTime.getTime();
+            diff = (((diff / 1000) / 60) / 60);
+
+            if (diff <= 2) {
+                throw new BaseException(MATCH_APPLY_PERIOD_ERROR); // 신청 거절 기한이 지난 경우
+            }
+
+            userMatchDao.rejectUserMatchApply(matchApplyIdx);
+
         } catch (BaseException e) {
             throw e;
         } catch (Exception e) {
