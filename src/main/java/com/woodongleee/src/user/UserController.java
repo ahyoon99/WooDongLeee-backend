@@ -87,7 +87,7 @@ public class UserController {
     //이메일 중복 검사 + 인증
     @Transactional
     @ResponseBody
-    @GetMapping("/is-duplicated")
+    @GetMapping("/is-duplicated/email")
     public BaseResponse<String> isEmailDuplicated(@RequestParam String email){
         if(!isRegexEmail(email)){
             return new BaseResponse<>(INVALID_EMAIL_PATTERN);
