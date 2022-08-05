@@ -3,6 +3,7 @@ package com.woodongleee.src.userMatch;
 import com.woodongleee.config.BaseException;
 import com.woodongleee.config.BaseResponse;
 import com.woodongleee.config.BaseResponseStatus;
+import com.woodongleee.src.user.UserProvider;
 import com.woodongleee.src.userMatch.model.*;
 import com.woodongleee.utils.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,19 +12,31 @@ import org.springframework.stereotype.Service;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static com.woodongleee.config.BaseResponseStatus.LEAVED_USER;
+import static com.woodongleee.config.BaseResponseStatus.USER_DOES_NOT_EXIST;
+
 @Service
 public class UserMatchService {
     private final UserMatchDao userMatchDao;
     private final JwtService jwtService;
 
+    private final UserProvider userProvider;
+
     @Autowired
-    public UserMatchService(UserMatchDao userMatchDao, JwtService jwtService) {
+    public UserMatchService(UserMatchDao userMatchDao, JwtService jwtService, UserProvider userProvider) {
         this.userMatchDao = userMatchDao;
         this.jwtService = jwtService;
+        this.userProvider = userProvider;
     }
 
     public void applyUserMatch(int userIdx, int matchPostIdx) throws BaseException {
         try {
+            if(userProvider.checkUserExist(userIdx) == 0){
+                throw new BaseException(USER_DOES_NOT_EXIST);
+            }
+            if(userProvider.checkUserStatus(userIdx).equals("INACTIVE")){
+                throw new BaseException(LEAVED_USER);
+            }
             if (userMatchDao.checkMatchPostExist(matchPostIdx) != 1) {
                 throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // 존재하지 않는 matchPostIdx
             }
@@ -71,6 +84,13 @@ public class UserMatchService {
 
     public void cancelApplyUserMatch(int userIdx, int matchPostIdx) throws BaseException {
         try {
+            if(userProvider.checkUserExist(userIdx) == 0){
+                throw new BaseException(USER_DOES_NOT_EXIST);
+            }
+            if(userProvider.checkUserStatus(userIdx).equals("INACTIVE")){
+                throw new BaseException(LEAVED_USER);
+            }
+
             if (userMatchDao.checkMatchPostExist(matchPostIdx) != 1) {
                 throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // 존재하지 않는 matchPostIdx
             }
@@ -109,6 +129,13 @@ public class UserMatchService {
 
     public BaseResponse<CreateUserMatchPostRes> createUserMatchPost(int userIdx, int teamScheduleIdx, String contents) throws BaseException {
         try {
+            if(userProvider.checkUserExist(userIdx) == 0){
+                throw new BaseException(USER_DOES_NOT_EXIST);
+            }
+            if(userProvider.checkUserStatus(userIdx).equals("INACTIVE")){
+                throw new BaseException(LEAVED_USER);
+            }
+
             if (userMatchDao.isLeader(userIdx) != 1) {
                 throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // 리더가 아닙니다.
             }
@@ -146,6 +173,13 @@ public class UserMatchService {
 
     public BaseResponse<ModifyUserMatchPostRes> modifyUserMatchPost(int userIdx, int teamScheduleIdx, String contents) throws BaseException {
         try {
+            if(userProvider.checkUserExist(userIdx) == 0){
+                throw new BaseException(USER_DOES_NOT_EXIST);
+            }
+            if(userProvider.checkUserStatus(userIdx).equals("INACTIVE")){
+                throw new BaseException(LEAVED_USER);
+            }
+
             if (userMatchDao.isLeader(userIdx) != 1) {
                 throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // 리더가 아닙니다.
             }
@@ -184,6 +218,13 @@ public class UserMatchService {
 
     public void deleteUserMatchPost(int userIdx, int teamScheduleIdx) throws BaseException{
         try{
+            if(userProvider.checkUserExist(userIdx) == 0){
+                throw new BaseException(USER_DOES_NOT_EXIST);
+            }
+            if(userProvider.checkUserStatus(userIdx).equals("INACTIVE")){
+                throw new BaseException(LEAVED_USER);
+            }
+
             if (userMatchDao.isLeader(userIdx) != 1) {
                 throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // 리더가 아닙니다.
             }
