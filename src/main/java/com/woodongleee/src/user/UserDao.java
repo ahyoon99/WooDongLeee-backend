@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
+import java.util.List;
 
 @Repository
 public class UserDao {
@@ -151,11 +152,41 @@ public class UserDao {
         Object[] updateIdParam = new Object[]{id,userIdx};
         return this.jdbcTemplate.update(updateIdQuery, updateIdParam);
     }
-
     public int deleteUser(int userIdx) {
         String deleteUserQuery = "update User set status = ? where userIdx = ?";
-        Object[] deleteUserParams = new Object[]{"INACTIVE",userIdx};
-        return this.jdbcTemplate.update(deleteUserQuery,deleteUserParams);
+        Object[] deleteUserParams = new Object[]{"INACTIVE", userIdx};
+        return this.jdbcTemplate.update(deleteUserQuery, deleteUserParams);
+    }
+
+    public List<GetUserScheduleRes> getUserSchedule(int userIdx) {
+        String getUserScheduleQuery = "select TIH.name as homeName, TIA.name as awayName, TS.address, TS.startTime, TS.endTime, TS.date, MP.type as type\n" +
+                "from UserSchedule as US\n" +
+                "join TeamSchedule as TS on TS.teamScheduleIdx = US.teamScheduleIdx\n" +
+                "join TeamInfo as TIH on TIH.teamIdx = TS.homeIdx\n" +
+                "left join TeamInfo as TIA on TIA.teamIdx = TS.awayIdx\n" +
+                "left join MatchPost as MP on MP.teamScheduleIdx = US.teamScheduleIdx\n" +
+                "left join MatchApply as MA on MA.userIdx = US.userIdx\n" +
+                "where US.userIdx = ?";
+        int getUserScheduleParam = userIdx;
+        return this.jdbcTemplate.query(getUserScheduleQuery,
+                (rs, rowNum) -> new GetUserScheduleRes(
+                        rs.getString("homeName"),
+                        rs.getString("awayName"),
+                        rs.getString("address"),
+                        rs.getString("startTime"),
+                        rs.getString("endTime"),
+                        rs.getString("date"),
+                        rs.getString("type")),
+                getUserScheduleParam);
+    }
+
+    public GetIdByEmailRes getIdByEmail(String email) {
+        String getIdByEmailQuery = "select id from User where email = ?";
+        String getIdByEmailParam = email;
+        return this.jdbcTemplate.queryForObject(getIdByEmailQuery, (rs,rowNum) -> new GetIdByEmailRes(
+                rs.getString("id")),
+                getIdByEmailParam
+        );
     }
 }
 
