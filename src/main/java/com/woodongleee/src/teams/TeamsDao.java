@@ -28,7 +28,29 @@ public class TeamsDao {
         String query="SELECT exists(select teamScheduleIdx from TeamSchedule where teamScheduleIdx=?);";
         return this.jdbcTemplate.queryForObject(query, int.class, teamScheduleIdx);
     }
+    public int checkTeamNameExist(String name){
+        String query="SELECT exists(select name from TeamInfo where name=?);";
+        return this.jdbcTemplate.queryForObject(query, int.class, name);
+    }
+    public int checkTeamExist(int userIdx){
+        String query="select if(teamIdx is null, -1, teamIdx) as teamIdx from User where userIdx=?;";
+        return this.jdbcTemplate.queryForObject(query, int.class, userIdx);
+    }
 
+    public int checkApply(int teamIdx){
+        String query="SELECT exists(select teamIdx from TeamInfo where teamIdx=? and isRecruiting='true');";
+        return this.jdbcTemplate.queryForObject(query, int.class, teamIdx);
+    }
+    public int checkStatus(int userIdx, int teamIdx){
+        String checkStatusQuery="SELECT exists(select teamApplyIdx from TeamApply where userIdx=? and teamIdx=? and status='ACCEPTED');";
+        Object[] params= new Object[]{userIdx, teamIdx};
+        return this.jdbcTemplate.queryForObject(checkStatusQuery, int.class, params);
+    }
+    public int checkApplyExist(int userIdx, int teamIdx){
+        String checkQuery="SELECT exists(select teamApplyIdx from TeamApply where userIdx=? and teamIdx=?);";
+        Object[] Params= new Object[]{userIdx, teamIdx};
+        return this.jdbcTemplate.queryForObject(checkQuery, int.class, Params);
+    }
     public List<GetTeamsinfoRes> getTeaminfoByTown(String town){
         String selectTeamsinfoquery="SELECT * from TeamInfo where LOCATE(?, town)>0";
         return this.jdbcTemplate.query(selectTeamsinfoquery, (rs, rowNum) -> new GetTeamsinfoRes(
@@ -38,7 +60,7 @@ public class TeamsDao {
                 rs.getInt("teamScore"),
                 rs.getString("teamProfileImgURL"),
                 rs.getString("introduce"),
-                rs.getBoolean("isRecruiting"),
+                rs.getString("isRecruiting"),
                 rs.getString("status")
         ), town);
     }
@@ -52,7 +74,7 @@ public class TeamsDao {
                 rs.getInt("teamScore"),
                 rs.getString("teamProfileImgURL"),
                 rs.getString("introduce"),
-                rs.getBoolean("isRecruiting"),
+                rs.getString("isRecruiting"),
                 rs.getString("status")
         ), name);
     }
@@ -66,7 +88,7 @@ public class TeamsDao {
                 rs.getInt("teamScore"),
                 rs.getString("teamProfileImgURL"),
                 rs.getString("introduce"),
-                rs.getBoolean("isRecruiting"),
+                rs.getString("isRecruiting"),
                 rs.getString("status")
         ), teamIdx);
     }
@@ -103,7 +125,7 @@ public class TeamsDao {
     }
 
     public List<GetUserInfoRes> getUserInfoRes(int teamIdx){
-        String query="SELECT userIdx, name, email, id, profileImgUrl, town, introduce, gender, age from User where teamIdx=?;";
+        String query="SELECT userIdx, name, email, id, profileImgUrl, town, introduce, gender, age from User where teamIdx=? and status='ACTIVE';";
         return this.jdbcTemplate.query(query, (rs, rowNum)-> new GetUserInfoRes(
                 rs.getInt("userIdx"),
                 rs.getString("name"),
@@ -115,5 +137,36 @@ public class TeamsDao {
                 rs.getString("gender"),
                 rs.getInt("age")
         ), teamIdx);
+    }
+
+    public void teamApply(int userIdx, int teamIdx){
+        String teamApplyquery="INSERT INTO TeamApply(userIdx, teamIdx) values(?, ?);";
+        Object[] params=new Object[]{userIdx, teamIdx};
+        this.jdbcTemplate.update(teamApplyquery, params);
+    }
+    public void cancelTeamApply(int userIdx, int teamIdx){
+        String cancelQuery="UPDATE TeamApply SET status='CANCELED' where userIdx=? and teamIdx=?";
+        Object[] Params= new Object[]{userIdx, teamIdx};
+        this.jdbcTemplate.update(cancelQuery, Params);
+    }
+    public void leaveTeam(int userIdx, int teamIdx){
+        String leaveQuery="update User as U, TeamInfo as TI set U.teamIdx=null, TI.isRecruiting=\n"
+        +"case when TI.isRecruiting='FALSE' then 'TRUE' ELSE 'TRUE' end where U.teamIdx=TI.teamIdx and U.userIdx=? and U.teamIdx=?;";
+        Object[] Params= new Object[]{userIdx, teamIdx};
+        this.jdbcTemplate.update(leaveQuery, Params);
+    }
+
+    public List<GetTeamsinfoRes> getTeamsByRankRes(String town){
+        String query="SELECT * from TeamInfo WHERE LOCATE(?, town)>0 and status='ACTIVE' ORDER BY teamScore DESC;";
+        return this.jdbcTemplate.query(query, (rs, rowNum)->new GetTeamsinfoRes(
+                rs.getInt("teamIdx"),
+                rs.getString("name"),
+                rs.getString("town"),
+                rs.getInt("teamScore"),
+                rs.getString("teamProfileImgURL"),
+                rs.getString("introduce"),
+                rs.getString("isRecruiting"),
+                rs.getString("status")
+        ), town);
     }
 }

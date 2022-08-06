@@ -14,6 +14,6 @@ public class GetTeamsinfoRes {
     private int teamScore; // 팀 점수
     private String teamProfileImgUrl;
     private String introduce;// 팀 소개
-    private boolean isRecruiting; // 팀원 모집여부
+    private String isRecruiting; // 팀원 모집여부
     private String status; //팀 해체: INACTIVE
 }

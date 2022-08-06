@@ -20,50 +20,49 @@ public class TeamsService {
         this.jwtService=jwtService;
     }
 
-    public void getTeaminfo(int userIdx, int teamIdx) throws BaseException{
-        try{
-            if(teamsDao.checkTeamIdxExist(teamIdx)!=1){
-                throw new BaseException(BaseResponseStatus.TEAM_DOES_NOT_EXIST); //존재하지 않는 teamIdx
-            }
-        }catch(BaseException e){
-            throw e;
-        }catch(Exception e){
+    public void teamApply(int userIdx, int teamIdx) throws BaseException {
+        if (teamsDao.checkTeamIdxExist(teamIdx) != 1) {
+            throw new BaseException(BaseResponseStatus.TEAM_DOES_NOT_EXIST);//존재하지 않는 팀 id
+        }
+        if (teamsDao.checkApply(teamIdx) != 1) {
+            throw new BaseException(BaseResponseStatus.TEAM_NOT_RECRUITING); // 모집하지 않는 팀
+        }
+        if (teamsDao.checkTeamExist(userIdx)!=-1) {
+            throw new BaseException(BaseResponseStatus.TEAM_ALREADY_EXIST); // 이미 가입된 팀 존재
+        }
+        try {
+            teamsDao.teamApply(userIdx, teamIdx);
+        }catch(Exception exception){
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
     }
-
-    public void getTeamSchedule(int userIdx, int teamIdx, String startTime, String endTime) throws BaseException{
+    public void cancelTeamApply(int userIdx, int teamIdx) throws BaseException{
+        if(teamsDao.checkTeamIdxExist(teamIdx)!=1){
+            throw new BaseException(BaseResponseStatus.TEAM_DOES_NOT_EXIST); // 존재하지 않는 팀 id
+        }
+        if(teamsDao.checkStatus(userIdx, teamIdx)==1){
+            throw new BaseException(BaseResponseStatus.CANCEL_NOT_AVAILABLE); // 취소를 할 수 없음
+        }
+        if(teamsDao.checkApplyExist(userIdx, teamIdx)!=1){
+            throw new BaseException(BaseResponseStatus.TEAM_APPLY_DOES_NOT_EXIST); //신청 내역이 없습니다
+        }
         try{
-            if(teamsDao.checkTeamIdxExist(teamIdx)!=1){
-                throw new BaseException(BaseResponseStatus.TEAM_DOES_NOT_EXIST); //존재하지 않는 teamIdx;
-            }
-        }catch(BaseException e){
-            throw e;
-        }catch(Exception e){
+            teamsDao.cancelTeamApply(userIdx, teamIdx);
+        }catch(Exception exception){
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
     }
-    public void getTeamScheduleInfo(int userIdx, int teamScheduleIdx) throws BaseException{
+    public void leaveTeam(int userIdx, int teamIdx) throws BaseException{
+        if(teamsDao.checkTeamIdxExist(teamIdx)!=1){
+            throw new BaseException(BaseResponseStatus.TEAM_DOES_NOT_EXIST); //존재하지 않는 팀 id
+        }
+        if(teamsDao.checkTeamExist(userIdx)!=teamIdx){
+            throw new BaseException(BaseResponseStatus.NOT_TEAMMATE); //팀원이 아닙니다
+        }
         try{
-            if(teamsDao.checkTeamScheduleIdxExist(teamScheduleIdx)!=1){
-                throw new BaseException(BaseResponseStatus.SCHEDULE_DOES_NOT_EXIST); //존재하지 않는 스케줄
-            }
-        }catch(BaseException e){
-            throw e;
-        }catch(Exception e){
+            teamsDao.leaveTeam(userIdx, teamIdx);
+        }catch(Exception exception){
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
     }
-    public void getUserInfo(int userIdx, int teamIdx) throws BaseException{
-        try{
-            if(teamsDao.checkTeamIdxExist(teamIdx)!=1){
-                throw new BaseException(BaseResponseStatus.TEAM_DOES_NOT_EXIST); //존재하지 않는 팀 id
-            }
-        }catch(BaseException e){
-            throw e;
-        }catch(Exception e){
-            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
-        }
-    }
-
 }

@@ -2,10 +2,12 @@ package com.woodongleee.src.teams;
 
 import com.woodongleee.config.BaseException;
 import com.woodongleee.config.BaseResponse;
+import com.woodongleee.config.BaseResponseStatus;
 import com.woodongleee.src.teams.model.GetTeamsinfoRes;
 import com.woodongleee.src.teams.model.GetUserInfoRes;
 import com.woodongleee.src.teams.model.GetTeamScheduleInfoRes;
 import com.woodongleee.src.teams.model.GetTeamsScheduleRes;
+import com.woodongleee.src.user.UserProvider;
 import com.woodongleee.utils.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -25,10 +27,14 @@ public class TeamsController {
     @Autowired
     private final JwtService jwtService;
 
-    public TeamsController(TeamsProvider teamsProvider, TeamsService teamsService, JwtService jwtService){
+    @Autowired
+    private final UserProvider userProvider;
+
+    public TeamsController(TeamsProvider teamsProvider, TeamsService teamsService, JwtService jwtService, UserProvider userProvider){
         this.teamsProvider=teamsProvider;
         this.teamsService=teamsService;
         this.jwtService=jwtService;
+        this.userProvider=userProvider;
     }
     //동네로 팀 목록 조회
     @ResponseBody
@@ -63,7 +69,6 @@ public class TeamsController {
         try{
             int userIdxByJwt= jwtService.getUserIdx();
             GetTeamsinfoRes getTeamsinfoRes=teamsProvider.getTeaminfo(userIdxByJwt, teamIdx);
-            teamsService.getTeaminfo(userIdxByJwt, teamIdx);
             return new BaseResponse<>(getTeamsinfoRes);
         }catch (BaseException exception){
             return new BaseResponse<>((exception.getStatus()));
@@ -77,12 +82,12 @@ public class TeamsController {
         try{
             int userIdxByJwt=jwtService.getUserIdx();
             List<GetTeamsScheduleRes> getTeamsScheduleRes=teamsProvider.getTeamsScheduleRes(userIdxByJwt, teamIdx, starDate, endDate);
-            teamsService.getTeamSchedule(userIdxByJwt, teamIdx, starDate, endDate);
             return new BaseResponse<>(getTeamsScheduleRes);
         }catch(BaseException exception){
             return new BaseResponse<>((exception.getStatus()));
         }
     }
+
     //특정 일정 정보 조회
     @ResponseBody
     @GetMapping("/schedule/{teamScheduleIdx}")
@@ -104,8 +109,62 @@ public class TeamsController {
         try{
             int userIdByJwt= jwtService.getUserIdx();
             List<GetUserInfoRes> getUserInfoRes=teamsProvider.getUserInfoRes(userIdByJwt, teamIdx);
-            teamsService.getUserInfo(userIdByJwt, teamIdx);
             return new BaseResponse<>(getUserInfoRes);
+        }catch(BaseException exception){
+            return new BaseResponse<>((exception.getStatus()));
+        }
+    }
+
+    //팀 가입 신청
+    @ResponseBody
+    @PostMapping("/{teamIdx}/apply")
+    public BaseResponse<String> teamApply(@PathVariable("teamIdx")int teamIdx){
+        try{
+            int userIdxByJwt= jwtService.getUserIdx();
+            teamsService.teamApply(userIdxByJwt, teamIdx);
+            String result="팀 신청이 완료되었습니다";
+            return new BaseResponse<>(result);
+        }catch(BaseException exception){
+            return new BaseResponse<>((exception.getStatus()));
+        }
+    }
+
+    //팀 가입 신청 취소
+    @ResponseBody
+    @PatchMapping("/{teamIdx}/apply")
+    public BaseResponse<String> cancelTeamApply(@PathVariable("teamIdx") int teamIdx){
+        try{
+            int userIdxByJwt= jwtService.getUserIdx();
+            teamsService.cancelTeamApply(userIdxByJwt, teamIdx);
+            String result="팀 신청이 취소되었습니다";
+            return new BaseResponse<>(result);
+        }catch(BaseException exception){
+            return new BaseResponse<>((exception.getStatus()));
+        }
+    }
+
+    //팀 탈퇴
+    @ResponseBody
+    @PatchMapping("/{teamIdx}/users/leave")
+    public BaseResponse<String> leaveTeam(@PathVariable("teamIdx") int teamIdx){
+        try{
+            int userIdxByJwt= jwtService.getUserIdx();
+            teamsService.leaveTeam(userIdxByJwt, teamIdx);
+            String result="팀을 탈퇴하였습니다.";
+            return new BaseResponse<>(result);
+        }catch(BaseException exception){
+            return new BaseResponse<>((exception.getStatus()));
+        }
+    }
+
+    //팀 순위 목록 조회(지역별로 필터링)
+    @ResponseBody
+    @GetMapping("/ranking")
+    public BaseResponse<List<GetTeamsinfoRes>> getTeamsbyRank(@RequestParam String town){
+        try{
+            int userIdByJwt=jwtService.getUserIdx();
+            List<GetTeamsinfoRes> getTeamsbyRankRes=teamsProvider.getTeamsbyRank(userIdByJwt, town);
+            return new BaseResponse<>(getTeamsbyRankRes);
         }catch(BaseException exception){
             return new BaseResponse<>((exception.getStatus()));
         }
