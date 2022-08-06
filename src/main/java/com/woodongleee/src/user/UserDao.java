@@ -192,8 +192,8 @@ public class UserDao {
                 "join TeamSchedule as TS on TS.teamScheduleIdx = MP.teamScheduleIdx\n" +
                 "join TeamInfo as TIH on TIH.teamIdx = TS.homeIdx\n" +
                 "left join TeamInfo as TIA on TIA.teamIdx = TS.awayIdx\n" +
-                "where MA.userIdx = ?";
-        int getUserApplyParams = userIdx;
+                "where MA.userIdx = ? and MP.type = ?";
+        Object[] getUserApplyParams = new Object[]{userIdx,"USER"};
         return this.jdbcTemplate.query(getUserApplyQuery,
                 (rs,rowNum) -> new GetUserApplyRes(
                     rs.getString("homeName"),
