@@ -198,4 +198,15 @@ public class UserController {
             return new BaseResponse<>(e.getStatus());
         }
     }
+
+    @ResponseBody
+    @GetMapping("/find")
+    public BaseResponse<GetIdByEmailRes> getIdByEmail(@RequestParam String email){
+        try{
+            GetIdByEmailRes getIdByEmailRes = userProvider.getIdByEmail(email);
+            return new BaseResponse<>(getIdByEmailRes);
+        } catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
 }
