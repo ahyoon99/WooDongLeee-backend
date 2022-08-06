@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 import static com.woodongleee.config.BaseResponseStatus.*;
@@ -195,6 +196,28 @@ public class UserController {
             userService.updateId(userIdx, id);
             return new BaseResponse<>("수정이 완료되었습니다.");
         } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @GetMapping("/schedule")
+    public BaseResponse<List<GetUserScheduleRes>> getUserSchedule() {
+        try {
+            int userIdx = jwtService.getUserIdx();
+            List<GetUserScheduleRes> userScheduleList = userProvider.getUserSchedule(userIdx);
+            return new BaseResponse<>(userScheduleList);
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+    @ResponseBody
+    @GetMapping("/find")
+    public BaseResponse<GetIdByEmailRes> getIdByEmail(@RequestParam String email){
+        try{
+            GetIdByEmailRes getIdByEmailRes = userProvider.getIdByEmail(email);
+            return new BaseResponse<>(getIdByEmailRes);
+        } catch (BaseException e){
             return new BaseResponse<>(e.getStatus());
         }
     }
