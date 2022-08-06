@@ -151,5 +151,11 @@ public class UserDao {
         Object[] updateIdParam = new Object[]{id,userIdx};
         return this.jdbcTemplate.update(updateIdQuery, updateIdParam);
     }
+
+    public int deleteUser(int userIdx) {
+        String deleteUserQuery = "update User set status = ? where userIdx = ?";
+        Object[] deleteUserParams = new Object[]{"INACTIVE",userIdx};
+        return this.jdbcTemplate.update(deleteUserQuery,deleteUserParams);
+    }
 }
 
