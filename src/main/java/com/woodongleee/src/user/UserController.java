@@ -221,4 +221,16 @@ public class UserController {
             return new BaseResponse<>(e.getStatus());
         }
     }
+
+    @ResponseBody
+    @GetMapping("/apply")
+    public BaseResponse<List<GetUserApplyRes>> getUserApply(){
+        try{
+            int userIdx = jwtService.getUserIdx();
+            List<GetUserApplyRes> getUserApplyRes = userProvider.getUserApply(userIdx);
+            return new BaseResponse<>(getUserApplyRes);
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
 }
