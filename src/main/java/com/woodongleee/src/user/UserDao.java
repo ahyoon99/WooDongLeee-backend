@@ -151,5 +151,14 @@ public class UserDao {
         Object[] updateIdParam = new Object[]{id,userIdx};
         return this.jdbcTemplate.update(updateIdQuery, updateIdParam);
     }
+
+    public GetIdByEmailRes getIdByEmail(String email) {
+        String getIdByEmailQuery = "select id from User where email = ?";
+        String getIdByEmailParam = email;
+        return this.jdbcTemplate.queryForObject(getIdByEmailQuery, (rs,rowNum) -> new GetIdByEmailRes(
+                rs.getString("id")),
+                getIdByEmailParam
+        );
+    }
 }
 

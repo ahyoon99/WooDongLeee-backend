@@ -129,4 +129,14 @@ public class UserProvider {
             throw new BaseException(DATABASE_ERROR);
         }
     }
+
+    public GetIdByEmailRes getIdByEmail(String email) throws BaseException {
+        try{
+            return userDao.getIdByEmail(email);
+        } catch (EmptyResultDataAccessException e){
+            throw new BaseException(EMAIL_DOES_NOT_EXIST);
+        } catch (Exception e){
+            throw new BaseException(DATABASE_ERROR);
+        }
+    }
 }

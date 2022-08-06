@@ -35,6 +35,7 @@ public enum BaseResponseStatus {
     MATCH_APPLY_DOES_NOT_EXIST(false, 3036, "존재하지 않는 매칭신청입니다."),
     TEAM_APPLY_DOES_NOT_EXIST(false, 3037, "존재하지 않는 팀 참가신청입니다."),
     EMAIL_VERIFY_REQUEST_DOES_NOT_EXIST(false, 3038, "존재하지 않는 이메일 인증 신청입니다."),
+    EMAIL_DOES_NOT_EXIST(false, 3039, "존재하지 않는 이메일 입니다."),
     MATCH_APPLY_PERIOD_ERROR(false, 3040, "용병/팀 모집 기간이 아닙니다."),
     MATCH_CREATE_PERIOD_ERROR(false, 3041, "용병/팀 모집글/매칭글 작성 기간이 아닙니다."),
     MATCH_APPLY_VOTE_PERIOD_ERROR(false, 3042, "참가 신청 투표 기한이 지났습니다."),
