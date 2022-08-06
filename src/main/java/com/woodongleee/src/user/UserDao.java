@@ -153,6 +153,7 @@ public class UserDao {
         return this.jdbcTemplate.update(updateIdQuery, updateIdParam);
     }
 
+
     public List<GetUserScheduleRes> getUserSchedule(int userIdx) {
         String getUserScheduleQuery = "select TIH.name as homeName, TIA.name as awayName, TS.address, TS.startTime, TS.endTime, TS.date, MP.type as type\n" +
                 "from UserSchedule as US\n" +
@@ -164,7 +165,7 @@ public class UserDao {
                 "where US.userIdx = ?";
         int getUserScheduleParam = userIdx;
         return this.jdbcTemplate.query(getUserScheduleQuery,
-                (rs,rowNum) -> new GetUserScheduleRes(
+                (rs, rowNum) -> new GetUserScheduleRes(
                         rs.getString("homeName"),
                         rs.getString("awayName"),
                         rs.getString("address"),
@@ -173,6 +174,15 @@ public class UserDao {
                         rs.getString("date"),
                         rs.getString("type")),
                 getUserScheduleParam);
+    }
+
+    public GetIdByEmailRes getIdByEmail(String email) {
+        String getIdByEmailQuery = "select id from User where email = ?";
+        String getIdByEmailParam = email;
+        return this.jdbcTemplate.queryForObject(getIdByEmailQuery, (rs,rowNum) -> new GetIdByEmailRes(
+                rs.getString("id")),
+                getIdByEmailParam
+        );
     }
 }
 

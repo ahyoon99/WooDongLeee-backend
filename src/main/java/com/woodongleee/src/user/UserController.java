@@ -202,12 +202,22 @@ public class UserController {
 
     @ResponseBody
     @GetMapping("/schedule")
-    public BaseResponse<List<GetUserScheduleRes>> getUserSchedule(){
+    public BaseResponse<List<GetUserScheduleRes>> getUserSchedule() {
         try {
             int userIdx = jwtService.getUserIdx();
             List<GetUserScheduleRes> userScheduleList = userProvider.getUserSchedule(userIdx);
             return new BaseResponse<>(userScheduleList);
         } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+    @ResponseBody
+    @GetMapping("/find")
+    public BaseResponse<GetIdByEmailRes> getIdByEmail(@RequestParam String email){
+        try{
+            GetIdByEmailRes getIdByEmailRes = userProvider.getIdByEmail(email);
+            return new BaseResponse<>(getIdByEmailRes);
+        } catch (BaseException e){
             return new BaseResponse<>(e.getStatus());
         }
     }

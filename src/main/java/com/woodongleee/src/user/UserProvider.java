@@ -9,6 +9,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.woodongleee.config.BaseResponseStatus.*;
@@ -131,19 +132,28 @@ public class UserProvider {
         }
     }
 
+
     public List<GetUserScheduleRes> getUserSchedule(int userIdx) throws BaseException {
-        if(checkUserExist(userIdx) == 0){
+        if (checkUserExist(userIdx) == 0) {
             throw new BaseException(USER_DOES_NOT_EXIST);
         }
-        if(checkUserStatus(userIdx).equals("INACTIVE")){
+        if (checkUserStatus(userIdx).equals("INACTIVE")) {
             throw new BaseException(LEAVED_USER);
         }
-        try{
+        try {
             return userDao.getUserSchedule(userIdx);
-        } catch (Exception e){
-            e.printStackTrace();
+        } catch (Exception e) {
             throw new BaseException(DATABASE_ERROR);
         }
+    }
 
+    public GetIdByEmailRes getIdByEmail(String email) throws BaseException {
+        try{
+            return userDao.getIdByEmail(email);
+        } catch (EmptyResultDataAccessException e){
+            throw new BaseException(EMAIL_DOES_NOT_EXIST);
+        } catch (Exception e){
+            throw new BaseException(DATABASE_ERROR);
+        }
     }
 }
