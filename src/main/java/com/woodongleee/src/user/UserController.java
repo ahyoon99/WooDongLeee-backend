@@ -3,15 +3,15 @@ package com.woodongleee.src.user;
 import com.woodongleee.config.BaseException;
 import com.woodongleee.config.BaseResponse;
 import com.woodongleee.src.email.EmailService;
-import com.woodongleee.src.user.model.CreateUserReq;
-import com.woodongleee.src.user.model.GetUserByJwtRes;
-import com.woodongleee.src.user.model.UserLoginReq;
-import com.woodongleee.src.user.model.UserLoginRes;
+import com.woodongleee.src.user.model.*;
 import com.woodongleee.utils.JwtService;
+import com.woodongleee.utils.ValidationRegex;
+import org.hibernate.sql.Update;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 import static com.woodongleee.config.BaseResponseStatus.*;
@@ -38,7 +38,6 @@ public class UserController {
     @ResponseBody
     @PostMapping
     public BaseResponse<String> createUser(@RequestBody CreateUserReq newUser){
-
         Object[] params = new Object[]{
                 newUser.getName(),
                 newUser.getAge(),
@@ -77,8 +76,12 @@ public class UserController {
         if(!isRegexId(id)){
             return new BaseResponse<>(INVALID_ID_PATTERN);
         }
-        if(userProvider.isIdDuplicated(id)){
-            return new BaseResponse<>(DUPLICATED_ID);
+        try {
+            if(userProvider.isIdDuplicated(id)){
+                return new BaseResponse<>(DUPLICATED_ID);
+            }
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
         }
 
         return new BaseResponse<>("중복 검사 성공");
@@ -87,13 +90,17 @@ public class UserController {
     //이메일 중복 검사 + 인증
     @Transactional
     @ResponseBody
-    @GetMapping("/is-duplicated")
+    @GetMapping("/is-duplicated/email")
     public BaseResponse<String> isEmailDuplicated(@RequestParam String email){
         if(!isRegexEmail(email)){
             return new BaseResponse<>(INVALID_EMAIL_PATTERN);
         }
-        if(userProvider.isEmailDuplicated(email)){
-            return new BaseResponse<>(DUPLICATED_EMAIL);
+        try {
+            if(userProvider.isEmailDuplicated(email)){
+                return new BaseResponse<>(DUPLICATED_EMAIL);
+            }
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
         }
         try {
             String code = emailService.createKey();
@@ -132,6 +139,85 @@ public class UserController {
             GetUserByJwtRes getUserByJwtRes = userProvider.getUserByJwt(userIdx);
             return new BaseResponse<>(getUserByJwtRes);
         } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @PatchMapping()
+    public BaseResponse<String> updateUser(@RequestBody UpdateUserReq updateUserReq){
+        Object[] params = new Object[]{
+                updateUserReq.getName(),
+                updateUserReq.getAge(),
+                updateUserReq.getGender(),
+                updateUserReq.getTown(),
+        };
+        if(Arrays.stream(params).anyMatch(Objects::isNull)){
+            return new BaseResponse<>(EMPTY_PARAMETER);
+        }
+        try{
+            int userIdx = jwtService.getUserIdx();
+            userService.updateUser(userIdx, updateUserReq);
+            return new BaseResponse<>("수정이 완료되었습니다.");
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @PatchMapping("/pwd")
+    public BaseResponse<String> updatePassword(@RequestBody UpdatePasswordReq updatePasswordReq){
+        String currentPassword = updatePasswordReq.getCurrentPassword();
+        String newPassword = updatePasswordReq.getNewPassword();
+        if(newPassword == null || currentPassword == null){
+            return new BaseResponse<>(EMPTY_PARAMETER);
+        }
+        try {
+            int userIdx = jwtService.getUserIdx();
+            userService.updatePassword(userIdx, updatePasswordReq);
+            return new BaseResponse<>("수정이 완료되었습니다.");
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @PatchMapping("/id")
+    public BaseResponse<String> updateId(@RequestBody UpdateIdReq updateIdReq){
+        String id = updateIdReq.getId();
+        if(id == null){
+            return new BaseResponse<>(EMPTY_PARAMETER);
+        }
+        if(!isRegexId(id)){
+            return new BaseResponse<>(INVALID_ID_PATTERN);
+        }
+        try{
+            int userIdx = jwtService.getUserIdx();
+            userService.updateId(userIdx, id);
+            return new BaseResponse<>("수정이 완료되었습니다.");
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @GetMapping("/schedule")
+    public BaseResponse<List<GetUserScheduleRes>> getUserSchedule() {
+        try {
+            int userIdx = jwtService.getUserIdx();
+            List<GetUserScheduleRes> userScheduleList = userProvider.getUserSchedule(userIdx);
+            return new BaseResponse<>(userScheduleList);
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+    @ResponseBody
+    @GetMapping("/find")
+    public BaseResponse<GetIdByEmailRes> getIdByEmail(@RequestParam String email){
+        try{
+            GetIdByEmailRes getIdByEmailRes = userProvider.getIdByEmail(email);
+            return new BaseResponse<>(getIdByEmailRes);
+        } catch (BaseException e){
             return new BaseResponse<>(e.getStatus());
         }
     }

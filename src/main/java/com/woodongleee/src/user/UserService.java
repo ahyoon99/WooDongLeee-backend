@@ -2,7 +2,8 @@ package com.woodongleee.src.user;
 
 import com.woodongleee.config.BaseException;
 import com.woodongleee.src.user.model.CreateUserReq;
-import com.woodongleee.src.user.model.UserLoginReq;
+import com.woodongleee.src.user.model.UpdatePasswordReq;
+import com.woodongleee.src.user.model.UpdateUserReq;
 import com.woodongleee.utils.JwtService;
 import com.woodongleee.utils.SHA256;
 import org.springframework.stereotype.Service;
@@ -66,4 +67,69 @@ public class UserService {
         }
     }
 
+    public void updateUser(int userIdx, UpdateUserReq updateUserReq) throws BaseException {
+        if(userProvider.checkUserExist(userIdx) == 0){
+            throw new BaseException(USER_DOES_NOT_EXIST);
+        }
+        if(userProvider.checkUserStatus(userIdx).equals("INACTIVE")){
+            throw new BaseException(LEAVED_USER);
+        }
+        try{
+            int result = userDao.updateUser(userIdx, updateUserReq);
+            if(result != 1){
+                throw new BaseException(DATABASE_ERROR);
+            }
+        } catch (Exception exception){
+            throw new BaseException(DATABASE_ERROR);
+        }
+    }
+
+    public void updatePassword(int userIdx, UpdatePasswordReq updatePasswordReq) throws BaseException {
+        try{
+            if(userProvider.checkUserExist(userIdx) == 0){
+                throw new BaseException(USER_DOES_NOT_EXIST);
+            }
+            if(userProvider.checkUserStatus(userIdx).equals("INACTIVE")){
+                throw new BaseException(LEAVED_USER);
+            }
+            if(!userProvider.checkPassword(userIdx, updatePasswordReq.getCurrentPassword())){
+                throw new BaseException(WRONG_PASSWORD);
+            }
+            String password;
+            try{
+                //암호화
+                password = SHA256.encrypt(updatePasswordReq.getNewPassword());
+            } catch (Exception exception) {
+                throw new BaseException(PASSWORD_ENCRYPTION_ERROR);
+            }
+            int result = userDao.updatePassword(userIdx, password);
+            if(result != 1){
+                throw new BaseException(DATABASE_ERROR);
+            }
+        } catch (BaseException baseException){
+            throw baseException;
+        } catch (Exception e){
+            throw new BaseException(DATABASE_ERROR);
+        }
+    }
+
+    public void updateId(int userIdx, String id) throws BaseException {
+        if(userProvider.checkUserExist(userIdx) == 0){
+            throw new BaseException(USER_DOES_NOT_EXIST);
+        }
+        if(userProvider.checkUserStatus(userIdx).equals("INACTIVE")){
+            throw new BaseException(LEAVED_USER);
+        }
+        if(userProvider.isIdDuplicated(id)){
+            throw new BaseException(DUPLICATED_ID);
+        }
+        try{
+            int result = userDao.updateId(userIdx, id);
+            if(result != 1){
+                throw new BaseException(DATABASE_ERROR);
+            }
+        } catch (Exception exception){
+            throw new BaseException(DATABASE_ERROR);
+        }
+    }
 }

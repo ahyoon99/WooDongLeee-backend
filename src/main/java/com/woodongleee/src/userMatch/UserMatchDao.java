@@ -1,9 +1,6 @@
 package com.woodongleee.src.userMatch;
 
-import com.woodongleee.src.userMatch.Domain.CheckApplyingPossibilityRes;
-import com.woodongleee.src.userMatch.Domain.CheckCancelApplyingPossibilityRes;
-import com.woodongleee.src.userMatch.Domain.CheckCreateUserMatchPostPossibilityRes;
-import com.woodongleee.src.userMatch.Domain.GetUserMatchPostInfoRes;
+import com.woodongleee.src.userMatch.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -152,5 +149,86 @@ public class UserMatchDao {
                 "where teamScheduleIdx=?;";
         Object[] Params = new Object[] {userIdx, teamScheduleIdx};
         return this.jdbcTemplate.queryForObject(Query, int.class, Params);
+    }
+
+    public int modifyUserMatchPost(int userIdx, int teamScheduleIdx, String contents) {
+        String Query = "update MatchPost set contents=? where userIdx=? and teamScheduleIdx=?;";
+        Object[] Params = new Object[] {contents, userIdx, teamScheduleIdx};
+        this.jdbcTemplate.update(Query, Params);
+        return this.jdbcTemplate.queryForObject("select matchPostIdx from MatchPost where userIdx=? and teamScheduleIdx=?", int.class, new Object[] {userIdx, teamScheduleIdx});
+    }
+
+    public void deleteUserMatchPost(int userIdx, int teamScheduleIdx) {
+        String Query = "delete from MatchPost where userIdx=? and teamScheduleIdx=?";
+        Object[] Params = new Object[] {userIdx, teamScheduleIdx};
+        this.jdbcTemplate.update(Query, Params);
+    }
+
+    public int existsMatchPost(int teamScheduleIdx) {
+        String Query = "select exists(select matchPostIdx from MatchPost where teamScheduleIdx=?);";
+        return this.jdbcTemplate.queryForObject(Query, int.class, teamScheduleIdx);
+    }
+
+    public List<UserMatchApplyInfo> getUserMatchApplyList(int teamScheduleIdx) {
+        String Query = "select matchApplyIdx, MA.matchPostIdx, U.userIdx, U.name, MA.status from MatchApply MA\n" +
+                "join User U on MA.userIdx = U.userIdx\n" +
+                "join MatchPost MP on MA.matchPostIdx = MP.matchPostIdx\n" +
+                "where teamScheduleIdx=?;";
+        return this.jdbcTemplate.query(Query, (rs, rowNum) -> new UserMatchApplyInfo(
+                rs.getInt("matchApplyIdx"),
+                rs.getInt("matchPostIdx"),
+                rs.getInt("userIdx"),
+                rs.getString("name"),
+                rs.getString("status")
+        ), teamScheduleIdx);
+    }
+
+    public void acceptUserMatchApply(int matchApplyIdx) {
+        // 신청 승인 -> MatchApply status 변경 -> 팀 스케쥴 인원 ++ -> 유저 스케쥴 추가
+
+        String Query1 = "update MatchApply MA, TeamSchedule TS\n" +
+                "set MA.status = 'ACCEPTED', TS.userMatchCnt = TS.userMatchCnt + 1\n" +
+                "where MA.matchApplyIdx=? and\n" +
+                "      TS.teamScheduleIdx=\n" +
+                "      (select teamScheduleIdx from (select MP.teamScheduleIdx from MatchApply join MatchPost MP on MP.matchPostIdx =\n" +
+                "                                                                      MatchApply.matchPostIdx where MatchApply.matchApplyIdx=?) T);";
+        // MatchApply status 변경 + 팀 스케쥴 인원 추가
+
+        String Query2 = "insert into UserSchedule(teamScheduleIdx, userIdx)\n" +
+                "values((select teamScheduleIdx from MatchApply MA join MatchPost MP on MA.matchPostIdx = MP.matchPostIdx where matchApplyIdx=?),\n" +
+                "       (select userIdx from MatchApply where matchApplyIdx=?));";
+        // 유저 스케쥴 추가
+
+        Object[] Params = new Object[]{matchApplyIdx, matchApplyIdx};
+
+        this.jdbcTemplate.update(Query1, Params);
+        this.jdbcTemplate.update(Query2, Params);
+
+    }
+
+    public CheckUserMatchApplyPossibilityRes checkUserMatchApplyPossibility(int userIdx, int matchApplyIdx) {
+        String Query = "select MA.status as applyStatus, (headCnt - joinCnt - userMatchCnt) as count, startTime,\n" +
+                "       if(homeIdx=(select U.teamIdx from User U where userIdx=?), 1, 0) as status\n" +
+                "from MatchApply MA\n" +
+                "join MatchPost MP on MA.matchPostIdx = MP.matchPostIdx\n" +
+                "join TeamSchedule TS on MP.teamScheduleIdx = TS.teamScheduleIdx\n" +
+                "where matchApplyIdx=?;";
+        Object[] Params = new Object[] {userIdx, matchApplyIdx};
+        return jdbcTemplate.queryForObject(Query, (rs, rowNum) -> new CheckUserMatchApplyPossibilityRes(
+                rs.getString("applyStatus"),
+                rs.getInt("count"),
+                rs.getString("startTime"),
+                rs.getInt("status")
+        ), Params);
+    }
+
+    public int existsMatchApply(int matchApplyIdx) {
+        String Query = "select exists(select userIdx from MatchApply where matchApplyIdx=?);";
+        return this.jdbcTemplate.queryForObject(Query, int.class, matchApplyIdx);
+    }
+
+    public void rejectUserMatchApply(int matchApplyIdx) {
+        String Query = "update MatchApply set status='DENIED' where matchApplyIdx=?;";
+        this.jdbcTemplate.update(Query, matchApplyIdx);
     }
 }

@@ -9,6 +9,8 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.woodongleee.config.BaseResponseStatus.*;
 
@@ -24,17 +26,29 @@ public class UserProvider {
         this.userDao = userDao;
         this.jwtService = jwtService;
     }
-    public boolean isIdDuplicated(String id) {
-        return userDao.isIdDuplicated(id) == 1;
+    public boolean isIdDuplicated(String id) throws BaseException {
+        try{
+            return userDao.isIdDuplicated(id) == 1;
+        }catch (Exception e){
+            throw new BaseException(DATABASE_ERROR);
+        }
     }
 
-    public boolean isEmailDuplicated(String email) {
-        return userDao.isEmailDuplicated(email) == 1;
+    public boolean isEmailDuplicated(String email) throws BaseException {
+        try{
+            return userDao.isEmailDuplicated(email) == 1;
+        }catch (Exception e){
+            throw new BaseException(DATABASE_ERROR);
+        }
     }
 
     //이메일 인증 코드 중복 검사 -> 중복시 이전 인증 코드 삭제
-    public boolean isEmailVerifyCodeRequestDuplicated(String email){
-        return userDao.isEmailVerifyCodeRequestDuplicated(email) == 1;
+    public boolean isEmailVerifyCodeRequestDuplicated(String email) throws BaseException {
+        try {
+            return userDao.isEmailVerifyCodeRequestDuplicated(email) == 1;
+        }catch (Exception e){
+            throw new BaseException(DATABASE_ERROR);
+        }
     }
 
     //이메일 인증 코드 인증
@@ -74,18 +88,70 @@ public class UserProvider {
     }
 
     public GetUserByJwtRes getUserByJwt(int userIdx) throws BaseException {
-        try{
-            GetUserByJwtRes getUserByJwtRes = userDao.getUserByJwt(userIdx);
-
-            if(getUserByJwtRes.getStatus().equals("INACTIVE")){
-                throw new BaseException(LEAVED_USER);
-            }
-
-            return getUserByJwtRes;
-        } catch (EmptyResultDataAccessException e){
+        if(checkUserExist(userIdx) == 0){
             throw new BaseException(USER_DOES_NOT_EXIST);
-        } catch (BaseException e){
-            throw new BaseException(e.getStatus());
+        }
+        if(checkUserStatus(userIdx).equals("INACTIVE")){
+            throw new BaseException(LEAVED_USER);
+        }
+
+        try{
+            return userDao.getUserByJwt(userIdx);
+        } catch (Exception e){
+            throw new BaseException(DATABASE_ERROR);
+        }
+    }
+
+    public String checkUserStatus(int userIdx) throws BaseException {
+        try{
+            return userDao.checkUserStatus(userIdx);
+        } catch (Exception e){
+            throw new BaseException(DATABASE_ERROR);
+        }
+    }
+    public int checkUserExist(int userIdx) throws BaseException {
+        try{
+            return userDao.checkUserExist(userIdx);
+        } catch (Exception e){
+            throw new BaseException(DATABASE_ERROR);
+        }
+    }
+
+    public boolean checkPassword(int userIdx, String currentPassword) throws BaseException {
+        try{
+            //암호화
+            currentPassword = SHA256.encrypt(currentPassword);
+        } catch (Exception exception) {
+            throw new BaseException(PASSWORD_ENCRYPTION_ERROR);
+        }
+
+        try{
+            return userDao.checkPassword(userIdx).equals(currentPassword);
+        } catch (Exception e){
+            throw new BaseException(DATABASE_ERROR);
+        }
+    }
+
+
+    public List<GetUserScheduleRes> getUserSchedule(int userIdx) throws BaseException {
+        if (checkUserExist(userIdx) == 0) {
+            throw new BaseException(USER_DOES_NOT_EXIST);
+        }
+        if (checkUserStatus(userIdx).equals("INACTIVE")) {
+            throw new BaseException(LEAVED_USER);
+        }
+        try {
+            return userDao.getUserSchedule(userIdx);
+        } catch (Exception e) {
+            throw new BaseException(DATABASE_ERROR);
+        }
+    }
+
+    public GetIdByEmailRes getIdByEmail(String email) throws BaseException {
+        try{
+            return userDao.getIdByEmail(email);
+        } catch (EmptyResultDataAccessException e){
+            throw new BaseException(EMAIL_DOES_NOT_EXIST);
         } catch (Exception e){
             throw new BaseException(DATABASE_ERROR);
         }
