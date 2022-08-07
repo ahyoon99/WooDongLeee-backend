@@ -44,3 +44,4 @@ src/main/java/com/woodongleee/config/secret
 
 ### application.yml ###
 src/main/resources/application.yml
+src/main/resources/email.properties
