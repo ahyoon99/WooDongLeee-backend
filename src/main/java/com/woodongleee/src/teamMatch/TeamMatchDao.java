@@ -85,4 +85,18 @@ public class TeamMatchDao {
         Object [] updateMatchPostParams = new Object[] {contents, matchPostIdx};
         return this.jdbcTemplate.update(updateMatchPostQuery, updateMatchPostParams);
     }
+
+    // 팀 매칭글 삭제하기
+    public int deleteTeamMatchPosts(int matchPostIdx) {
+        String deleteTeamMatchPostsQuery = "delete from MatchPost where matchPostIdx=?";
+        Object [] deleteTeamMatchPostsParams = new Object[] {matchPostIdx};
+        return this.jdbcTemplate.update(deleteTeamMatchPostsQuery, deleteTeamMatchPostsParams);
+    }
+
+    // matchPostIdx로 ScheduleIdx 구하기
+    public int selectScheduleIdxByMatchPostIdx(int matchPostIdx) {
+        String findTeamScheduleIdxByMatchPostIdxQuery = "select teamScheduleIdx from MatchPost where matchPostIdx = ?";
+        int findTeamScheduleIdxByMatchPostIdxParams = matchPostIdx;
+        return this.jdbcTemplate.queryForObject(findTeamScheduleIdxByMatchPostIdxQuery, int.class, findTeamScheduleIdxByMatchPostIdxParams);
+    }
 }

@@ -73,4 +73,21 @@ public class TeamMatchController {
             return new BaseResponse<>(exception.getStatus());
         }
     }
+
+    @ResponseBody
+    @DeleteMapping("/{matchPostIdx}")
+    public BaseResponse<String> deleteTeamMatchPosts(@PathVariable int matchPostIdx){
+        try {
+            int userIdx = teamMatchProvider.selectUserIdxByMatchPostIdx(matchPostIdx);  // 매칭글 idx로 매칭글 작성한 유저 idx 찾기
+            int userIdxByJwt = jwtService.getUserIdx();
+            if(userIdx != userIdxByJwt){
+                return new BaseResponse<>(BaseResponseStatus.INVALID_JWT);
+            }
+            teamMatchService.deleteTeamMatchPosts(userIdxByJwt, matchPostIdx);
+            String result = "삭제를 성공했습니다.";
+            return new BaseResponse<>(result);
+        } catch (BaseException exception) {
+            return new BaseResponse<>(exception.getStatus());
+        }
+    }
 }
