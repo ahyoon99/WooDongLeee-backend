@@ -2,6 +2,7 @@ package com.woodongleee.src.teams_2;
 
 import com.woodongleee.config.BaseException;
 import com.woodongleee.config.BaseResponse;
+import com.woodongleee.src.teams_2.model.AddTeamScheduleReq;
 import com.woodongleee.utils.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -40,4 +41,17 @@ public class Teams_2Controller {
         }
     }
 
+    // 팀 일정 추가
+    @PostMapping("{teamIdx}/schedule")
+    public BaseResponse<String> addTeamSchedule(@RequestBody AddTeamScheduleReq addTeamScheduleReq, @PathVariable int teamIdx){
+        try{
+            int userIdx = jwtService.getUserIdx();
+            teams2Service.addTeamSchedule(addTeamScheduleReq, teamIdx, userIdx);
+
+            String result = "팀원 일정 추가 완료";
+            return new BaseResponse<>(result);
+        } catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
 }
