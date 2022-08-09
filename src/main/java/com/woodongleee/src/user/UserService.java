@@ -132,4 +132,21 @@ public class UserService {
             throw new BaseException(DATABASE_ERROR);
         }
     }
+
+    public void deleteUser(int userIdx) throws BaseException {
+        if(userProvider.checkUserExist(userIdx) == 0){
+            throw new BaseException(USER_DOES_NOT_EXIST);
+        }
+        if(userProvider.checkUserStatus(userIdx).equals("INACTIVE")){
+            throw new BaseException(LEAVED_USER);
+        }
+        try{
+            int result = userDao.deleteUser(userIdx);
+            if(result != 1){
+                throw new BaseException(DATABASE_ERROR);
+            }
+        } catch (Exception e){
+            throw new BaseException(DATABASE_ERROR);
+        }
+    }
 }

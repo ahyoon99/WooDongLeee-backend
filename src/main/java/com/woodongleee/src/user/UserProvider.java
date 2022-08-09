@@ -156,4 +156,18 @@ public class UserProvider {
             throw new BaseException(DATABASE_ERROR);
         }
     }
+
+    public List<GetUserApplyRes> getUserApply(int userIdx) throws BaseException {
+        if (checkUserExist(userIdx) == 0) {
+            throw new BaseException(USER_DOES_NOT_EXIST);
+        }
+        if (checkUserStatus(userIdx).equals("INACTIVE")) {
+            throw new BaseException(LEAVED_USER);
+        }
+        try{
+            return userDao.getUserApply(userIdx);
+        } catch (Exception e){
+            throw new BaseException(DATABASE_ERROR);
+        }
+    }
 }

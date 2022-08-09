@@ -201,6 +201,18 @@ public class UserController {
     }
 
     @ResponseBody
+    @PatchMapping("/status")
+    public BaseResponse<String> deleteUser() {
+        try {
+            int userIdx = jwtService.getUserIdx();
+            userService.deleteUser(userIdx);
+            return new BaseResponse<>("회원탈퇴에 성공하였습니다.");
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
     @GetMapping("/schedule")
     public BaseResponse<List<GetUserScheduleRes>> getUserSchedule() {
         try {
@@ -211,6 +223,7 @@ public class UserController {
             return new BaseResponse<>(e.getStatus());
         }
     }
+
     @ResponseBody
     @GetMapping("/find")
     public BaseResponse<GetIdByEmailRes> getIdByEmail(@RequestParam String email){
@@ -218,6 +231,18 @@ public class UserController {
             GetIdByEmailRes getIdByEmailRes = userProvider.getIdByEmail(email);
             return new BaseResponse<>(getIdByEmailRes);
         } catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @GetMapping("/apply")
+    public BaseResponse<List<GetUserApplyRes>> getUserApply(){
+        try{
+            int userIdx = jwtService.getUserIdx();
+            List<GetUserApplyRes> getUserApplyRes = userProvider.getUserApply(userIdx);
+            return new BaseResponse<>(getUserApplyRes);
+        } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
     }

@@ -152,7 +152,11 @@ public class UserDao {
         Object[] updateIdParam = new Object[]{id,userIdx};
         return this.jdbcTemplate.update(updateIdQuery, updateIdParam);
     }
-
+    public int deleteUser(int userIdx) {
+        String deleteUserQuery = "update User set status = ? where userIdx = ?";
+        Object[] deleteUserParams = new Object[]{"INACTIVE", userIdx};
+        return this.jdbcTemplate.update(deleteUserQuery, deleteUserParams);
+    }
 
     public List<GetUserScheduleRes> getUserSchedule(int userIdx) {
         String getUserScheduleQuery = "select TIH.name as homeName, TIA.name as awayName, TS.address, TS.startTime, TS.endTime, TS.date, MP.type as type\n" +
@@ -183,6 +187,28 @@ public class UserDao {
                 rs.getString("id")),
                 getIdByEmailParam
         );
+    }
+
+    public List<GetUserApplyRes> getUserApply(int userIdx) {
+        String getUserApplyQuery = "select TIH.name as homeName, TIA.name as awayName, TS.address, TS.startTime, TS.endTime, TS.date, MP.type, MA.status\n" +
+                "from MatchApply as MA\n" +
+                "join MatchPost as MP on MP.matchPostIdx = MA.matchPostIdx\n" +
+                "join TeamSchedule as TS on TS.teamScheduleIdx = MP.teamScheduleIdx\n" +
+                "join TeamInfo as TIH on TIH.teamIdx = TS.homeIdx\n" +
+                "left join TeamInfo as TIA on TIA.teamIdx = TS.awayIdx\n" +
+                "where MA.userIdx = ? and MP.type = ?";
+        Object[] getUserApplyParams = new Object[]{userIdx,"USER"};
+        return this.jdbcTemplate.query(getUserApplyQuery,
+                (rs,rowNum) -> new GetUserApplyRes(
+                    rs.getString("homeName"),
+                    rs.getString("awayName"),
+                    rs.getString("address"),
+                    rs.getString("startTime"),
+                    rs.getString("endTime"),
+                    rs.getString("date"),
+                    rs.getString("type"),
+                    rs.getString("status")),
+                getUserApplyParams);
     }
 }
 
