@@ -88,4 +88,35 @@ public class Teams_2Service {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
     }
+
+    public void disbandTeam(int userIdx, int teamIdx) throws BaseException{
+        try{
+            if(userProvider.checkUserExist(userIdx) == 0){
+                throw new BaseException(USER_DOES_NOT_EXIST);
+            }
+            if(userProvider.checkUserStatus(userIdx).equals("INACTIVE")){
+                throw new BaseException(LEAVED_USER);
+            }
+            if(teams2Dao.isLeader(userIdx) != 1){
+                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 리더가 아닌 경우
+            }
+
+            if(teams2Dao.checkTeamIdxExist(teamIdx) != 1){
+                throw new BaseException(TEAM_DOES_NOT_EXIST); // 팀이 존재하지 않음(해체된 경우도 포함)
+            }
+
+            if(teams2Dao.isOurTeam(userIdx, teamIdx) != 1){
+                throw new BaseException(LEAVED_USER); // teamIdx와 userIdx가 매치되지 않는 경우
+            }
+
+            teams2Dao.disbandTeam(teamIdx);
+
+
+
+        } catch (BaseException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
 }

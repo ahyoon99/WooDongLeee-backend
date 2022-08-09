@@ -17,7 +17,7 @@ public class Teams_2Dao {
     }
 
     public int checkTeamIdxExist(int teamIdx){
-        String checkTeamIdxExistQuery="SELECT exists(select teamIdx from TeamInfo where teamIdx=?);";
+        String checkTeamIdxExistQuery="SELECT exists(select teamIdx from TeamInfo where teamIdx=? and status='ACTIVE');";
         return this.jdbcTemplate.queryForObject(checkTeamIdxExistQuery, int.class, teamIdx);
     }
 
@@ -61,5 +61,25 @@ public class Teams_2Dao {
         Object[] Params = new Object[] {startTime, endTime};
 
         return this.jdbcTemplate.queryForObject(Query, int.class, Params);
+    }
+
+    public void disbandTeam(int teamIdx) {
+
+        // {팀 일정, 유저 일정, 팀의 포스트, 포스트에 대한 신청} 삭제
+        this.jdbcTemplate.execute("SET foreign_key_checks  = 0;");
+        this.jdbcTemplate.update("delete TS, US, MP, MA\n" +
+                "FROM TeamSchedule as TS\n" +
+                "left join UserSchedule US on TS.teamScheduleIdx = US.teamScheduleIdx\n" +
+                "left join MatchPost MP on TS.teamScheduleIdx = MP.teamScheduleIdx\n" +
+                "left join MatchApply MA on MP.matchPostIdx = MA.matchPostIdx\n" +
+                "where homeIdx=?;", teamIdx);
+        this.jdbcTemplate.execute("SET foreign_key_checks  = 1;");
+
+
+
+        // 유저 정보와 팀 신청 내역 업데이트
+        this.jdbcTemplate.update("update User set teamIdx=null, isLeader='F' where teamIdx=?;", teamIdx);
+        this.jdbcTemplate.update("update TeamApply set status='DENIED' where teamIdx=?;", teamIdx);
+        this.jdbcTemplate.update("update TeamInfo set status='INACTIVE' where teamIdx=?;", teamIdx);
     }
 }

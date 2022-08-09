@@ -54,4 +54,17 @@ public class Teams_2Controller {
             return new BaseResponse<>(e.getStatus());
         }
     }
+
+    // 팀 해체
+    @PatchMapping("{teamIdx}/status")
+    public BaseResponse<String> disbandTeam(@PathVariable int teamIdx){
+        try {
+            int userIdx = jwtService.getUserIdx();
+            teams2Service.disbandTeam(userIdx, teamIdx);
+            String result = "팀 해체 성공";
+            return new BaseResponse<>(result);
+        } catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
 }
