@@ -67,4 +67,19 @@ public class Teams_2Controller {
             return new BaseResponse<>(e.getStatus());
         }
     }
+
+
+    // 팀원 추방
+    @PatchMapping("/users/{userIdx}/drop")
+    public BaseResponse<String> dropUser(@PathVariable int userIdx){
+        try{
+            int leaderIdx = jwtService.getUserIdx();
+            teams2Service.dropUser(leaderIdx, userIdx);
+
+            String result = "팀원 추방 성공";
+            return new BaseResponse<>(result);
+        } catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
 }

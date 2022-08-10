@@ -75,11 +75,21 @@ public class Teams_2Dao {
                 "where homeIdx=?;", teamIdx);
         this.jdbcTemplate.execute("SET foreign_key_checks  = 1;");
 
-
-
         // 유저 정보와 팀 신청 내역 업데이트
         this.jdbcTemplate.update("update User set teamIdx=null, isLeader='F' where teamIdx=?;", teamIdx);
         this.jdbcTemplate.update("update TeamApply set status='DENIED' where teamIdx=?;", teamIdx);
         this.jdbcTemplate.update("update TeamInfo set status='INACTIVE' where teamIdx=?;", teamIdx);
+    }
+
+    public int getTeamIdx(int userIdx) {
+        String Query = "select teamIdx from User where userIdx=?;";
+        return this.jdbcTemplate.queryForObject(Query, int.class, userIdx);
+    }
+
+    public void dropUser(int userIdx) {
+        // 탈퇴 이전에 참여한 팀 경기에 대해서는 계속 참여 상태로 유지됩니다.
+        String Query = "update User set teamIdx=null where userIdx=?";
+        this.jdbcTemplate.update(Query, userIdx);
+
     }
 }
