@@ -53,6 +53,7 @@ public enum BaseResponseStatus {
     POST_POSTS_INVALID_CONTENTS(false, 3064, "내용의 글자수를 확인해주세요."),
     UNAUTHORIZED_POST(false, 3065, "수정/삭제는 글 작성자만 가능합니다."),
     MODIFY_FAIL_POST(false, 3066,"게시물 수정을 실패하였습니다."),
+    DELETE_FAIL_POST(false, 3067, "게시물 삭제를 실패하였습니다."),
     MATCH_POST_DOES_NOT_EXIST(false, 3080, "존재하지 않는 팀 매칭 글 입니다."),
 
     /**
