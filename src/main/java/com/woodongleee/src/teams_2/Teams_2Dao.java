@@ -107,4 +107,14 @@ public class Teams_2Dao {
         String Query3 = "update User set teamIdx=? where userIdx=?;"; // 유저 정보 갱신
         this.jdbcTemplate.update(Query3, Params);
     }
+
+    public void rejectUser(int teamApplyIdx) {
+        String Query = "update TeamApply set status='DENIED' where teamApplyIdx=?;";
+        this.jdbcTemplate.update(Query, teamApplyIdx);
+    }
+
+    public String getTeamApplyStatus(int teamApplyIdx) {
+        String Query = "select status from TeamApply where teamApplyIdx=?;";
+        return this.jdbcTemplate.queryForObject(Query, String.class, teamApplyIdx);
+    }
 }

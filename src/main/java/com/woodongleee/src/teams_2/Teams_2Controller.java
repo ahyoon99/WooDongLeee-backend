@@ -97,4 +97,18 @@ public class Teams_2Controller {
         }
     }
 
+    // 팀 가입 요청 거절
+    @PatchMapping("/apply/{teamApplyIdx}/reject")
+    public BaseResponse<String> rejectUser(@PathVariable int teamApplyIdx){
+        try{
+            int userIdx = jwtService.getUserIdx();
+            teams2Service.rejectUser(teamApplyIdx, userIdx);
+
+            String result = "가입 거절 성공";
+            return new BaseResponse<>(result);
+        } catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
 }

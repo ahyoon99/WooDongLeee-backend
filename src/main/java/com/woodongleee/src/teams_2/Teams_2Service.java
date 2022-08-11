@@ -177,4 +177,29 @@ public class Teams_2Service {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
     }
+
+    public void rejectUser(int teamApplyIdx, int userIdx) throws BaseException{
+        try{
+            if(userProvider.checkUserExist(userIdx) == 0){
+                throw new BaseException(USER_DOES_NOT_EXIST);
+            }
+            if(userProvider.checkUserStatus(userIdx).equals("INACTIVE")){
+                throw new BaseException(LEAVED_USER);
+            }
+            if(teams2Dao.isLeader(userIdx) != 1){
+                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 리더가 아닌 경우
+            }
+            
+            String status = teams2Dao.getTeamApplyStatus(teamApplyIdx);
+            if(!status.equals("APPLIED")){
+                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 신청이 취소되었거나 이미 거절된 경우
+            }
+
+            teams2Dao.rejectUser(teamApplyIdx);
+        } catch (BaseException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
 }
