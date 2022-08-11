@@ -1,5 +1,6 @@
 package com.woodongleee.src.teams_2;
 
+import com.woodongleee.src.teams_2.model.AcceptUserRes;
 import com.woodongleee.src.teams_2.model.AddTeamScheduleReq;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -91,5 +92,19 @@ public class Teams_2Dao {
         String Query = "update User set teamIdx=null where userIdx=?";
         this.jdbcTemplate.update(Query, userIdx);
 
+    }
+
+    public void acceptUser(int teamApplyIdx) {
+        String Query1 = "update TeamApply set status='ACCEPTED' where teamApplyIdx=?;"; // 팀 신청 수락
+        String Query2 = "select userIdx, teamIdx from TeamApply where teamApplyIdx=?;"; // TeamApply 테이블에서 유저, 팀 정보 가져오기
+        this.jdbcTemplate.update(Query1, teamApplyIdx);
+        AcceptUserRes acceptUserRes = this.jdbcTemplate.queryForObject(Query2, ((rs, rowNum) -> new AcceptUserRes(
+                rs.getInt("userIdx"),
+                rs.getInt("teamIdx")
+        )), teamApplyIdx);
+
+        Object[] Params = new Object[]{acceptUserRes.getTeamIdx(), acceptUserRes.getUserIdx()};
+        String Query3 = "update User set teamIdx=? where userIdx=?;"; // 유저 정보 갱신
+        this.jdbcTemplate.update(Query3, Params);
     }
 }

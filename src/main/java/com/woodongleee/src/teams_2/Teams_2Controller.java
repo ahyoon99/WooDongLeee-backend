@@ -82,4 +82,19 @@ public class Teams_2Controller {
             return new BaseResponse<>(e.getStatus());
         }
     }
+
+    // 팀 가입 요청 승인
+    @PatchMapping("/apply/{teamApplyIdx}/accept")
+    public BaseResponse<String> acceptUser(@PathVariable int teamApplyIdx){
+        try{
+            int userIdx = jwtService.getUserIdx();
+            teams2Service.acceptUser(teamApplyIdx, userIdx);
+
+            String result = "가입 승인 성공";
+            return new BaseResponse<>(result);
+        } catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
 }
