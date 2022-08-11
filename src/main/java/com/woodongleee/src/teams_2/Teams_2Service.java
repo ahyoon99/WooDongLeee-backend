@@ -170,6 +170,11 @@ public class Teams_2Service {
                 throw new BaseException(ACCEPT_NOT_AVAILABLE); // 리더가 아닌 경우
             }
 
+            String status = teams2Dao.getTeamApplyStatus(teamApplyIdx);
+            if(!status.equals("APPLIED")){
+                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 신청이 취소되었거나 이미 거절된 경우
+            }
+
             teams2Dao.acceptUser(teamApplyIdx);
         } catch (BaseException e) {
             throw e;
@@ -189,7 +194,7 @@ public class Teams_2Service {
             if(teams2Dao.isLeader(userIdx) != 1){
                 throw new BaseException(ACCEPT_NOT_AVAILABLE); // 리더가 아닌 경우
             }
-            
+
             String status = teams2Dao.getTeamApplyStatus(teamApplyIdx);
             if(!status.equals("APPLIED")){
                 throw new BaseException(ACCEPT_NOT_AVAILABLE); // 신청이 취소되었거나 이미 거절된 경우
