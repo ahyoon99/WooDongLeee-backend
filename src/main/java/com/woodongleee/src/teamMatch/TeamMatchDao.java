@@ -99,4 +99,18 @@ public class TeamMatchDao {
         int findTeamScheduleIdxByMatchPostIdxParams = matchPostIdx;
         return this.jdbcTemplate.queryForObject(findTeamScheduleIdxByMatchPostIdxQuery, int.class, findTeamScheduleIdxByMatchPostIdxParams);
     }
+
+    // 해당 팀 매칭이 ACCEPTED 되었는지 확인하기
+    public int checkApplyStatus(int matchPostIdx) {
+        String checkApplyStatusQuery = "select count(*) from MatchApply where status='ACCEPTED' and matchPostIdx = ?";
+        int checkApplyStatusParams = matchPostIdx;
+        return this.jdbcTemplate.queryForObject(checkApplyStatusQuery, int.class, checkApplyStatusParams);
+    }
+
+    // 팀 매칭 신청하기
+    public void applyTeamMatch(int userIdx, int matchPostIdx) {
+        String applyTeamMatchQuery = "INSERT INTO MatchApply(userIdx, matchPostIdx, status) VALUES (?,?,?);";
+        Object []applyTeamMatchParams = new Object[] {userIdx, matchPostIdx,"APPLIED"};
+        this.jdbcTemplate.update(applyTeamMatchQuery, applyTeamMatchParams);
+    }
 }
