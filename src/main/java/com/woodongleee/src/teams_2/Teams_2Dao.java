@@ -67,6 +67,7 @@ public class Teams_2Dao {
     }
 
     public void disbandTeam(int teamIdx) {
+        Object[] Params = new Object[] {teamIdx, teamIdx};
 
         // {팀 일정, 유저 일정, 팀의 포스트, 포스트에 대한 신청} 삭제
         this.jdbcTemplate.execute("SET foreign_key_checks  = 0;");
@@ -75,7 +76,7 @@ public class Teams_2Dao {
                 "left join UserSchedule US on TS.teamScheduleIdx = US.teamScheduleIdx\n" +
                 "left join MatchPost MP on TS.teamScheduleIdx = MP.teamScheduleIdx\n" +
                 "left join MatchApply MA on MP.matchPostIdx = MA.matchPostIdx\n" +
-                "where homeIdx=?;", teamIdx);
+                "where homeIdx=? or awayIdx=?;", Params);
         this.jdbcTemplate.execute("SET foreign_key_checks  = 1;");
 
         // 유저 정보와 팀 신청 내역 업데이트
