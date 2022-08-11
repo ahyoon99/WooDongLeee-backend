@@ -99,4 +99,39 @@ public class TeamMatchDao {
         int findTeamScheduleIdxByMatchPostIdxParams = matchPostIdx;
         return this.jdbcTemplate.queryForObject(findTeamScheduleIdxByMatchPostIdxQuery, int.class, findTeamScheduleIdxByMatchPostIdxParams);
     }
+
+    // 해당 팀 매칭이 ACCEPTED 되었는지 확인하기
+    public int checkApplyStatus(int matchPostIdx) {
+        String checkApplyStatusQuery = "select count(*) from MatchApply where status='ACCEPTED' and matchPostIdx = ?";
+        int checkApplyStatusParams = matchPostIdx;
+        return this.jdbcTemplate.queryForObject(checkApplyStatusQuery, int.class, checkApplyStatusParams);
+    }
+
+    // 팀 매칭 신청하기
+    public void applyTeamMatch(int userIdx, int matchPostIdx) {
+        String applyTeamMatchQuery = "INSERT INTO MatchApply(userIdx, matchPostIdx, status) VALUES (?,?,?);";
+        Object []applyTeamMatchParams = new Object[] {userIdx, matchPostIdx,"APPLIED"};
+        this.jdbcTemplate.update(applyTeamMatchQuery, applyTeamMatchParams);
+    }
+
+    // 사용자가 신청한 매칭이 이미 ACCEPTED 되었는지 확인하기
+    public String checkAlreadyApplyStatus(int userIdxByJwt, int matchPostIdx) {
+        String checkAlreadyApplyStatusQuery = "select status from MatchApply where userIdx=? and matchPostIdx=?";
+        Object []checkAlreadyApplyStatusParams = new Object[] {userIdxByJwt, matchPostIdx};
+        return this.jdbcTemplate.queryForObject(checkAlreadyApplyStatusQuery, String.class, checkAlreadyApplyStatusParams);
+    }
+
+    // 팀 매칭 신청 기록 있는지 확인하기
+    public int existMatchApply(int userIdxByJwt, int matchPostIdx) {
+        String existMatchApplyQuery = "select count(*) from MatchApply where userIdx=? and matchPostIdx=?";
+        Object []existMatchApplyParams = new Object[] {userIdxByJwt, matchPostIdx};
+        return this.jdbcTemplate.queryForObject(existMatchApplyQuery, int.class, existMatchApplyParams);
+    }
+
+    // 팀 매칭 신청 취소하기
+    public void cancelApplyTeamMatch(int userIdxByJwt, int matchPostIdx) {
+        String cancelApplyTeamMatchQuery = "update MatchApply set status='CANCELED' where userIdx=? and matchPostIdx=? and status!= 'ACCEPTED'";
+        Object [] cancelApplyTeamMatchParams = new Object[] {userIdxByJwt, matchPostIdx};
+        this.jdbcTemplate.update(cancelApplyTeamMatchQuery, cancelApplyTeamMatchParams);
+    }
 }
