@@ -106,7 +106,7 @@ public class Teams_2Service {
             }
 
             if(teams2Dao.isOurTeam(userIdx, teamIdx) != 1){
-                throw new BaseException(LEAVED_USER); // teamIdx와 userIdx가 매치되지 않는 경우
+                throw new BaseException(ACCEPT_NOT_AVAILABLE); // teamIdx와 userIdx가 매치되지 않는 경우
             }
 
             teams2Dao.disbandTeam(teamIdx);

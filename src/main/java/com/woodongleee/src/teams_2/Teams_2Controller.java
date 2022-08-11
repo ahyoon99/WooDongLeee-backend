@@ -3,9 +3,12 @@ package com.woodongleee.src.teams_2;
 import com.woodongleee.config.BaseException;
 import com.woodongleee.config.BaseResponse;
 import com.woodongleee.src.teams_2.model.AddTeamScheduleReq;
+import com.woodongleee.src.teams_2.model.TeamApplyListRes;
 import com.woodongleee.utils.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/teams")
@@ -106,6 +109,18 @@ public class Teams_2Controller {
 
             String result = "가입 거절 성공";
             return new BaseResponse<>(result);
+        } catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @GetMapping("{teamIdx}/apply")
+    public BaseResponse<List<TeamApplyListRes>> getTeamApplyList(@PathVariable int teamIdx){
+        try{
+            int userIdx = jwtService.getUserIdx();
+            List<TeamApplyListRes> teamApplyListResList = teams2Provider.getTeamApplyList(userIdx, teamIdx);
+
+            return new BaseResponse<>(teamApplyListResList);
         } catch (BaseException e){
             return new BaseResponse<>(e.getStatus());
         }

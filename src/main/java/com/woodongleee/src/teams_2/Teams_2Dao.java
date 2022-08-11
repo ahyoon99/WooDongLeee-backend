@@ -2,11 +2,13 @@ package com.woodongleee.src.teams_2;
 
 import com.woodongleee.src.teams_2.model.AcceptUserRes;
 import com.woodongleee.src.teams_2.model.AddTeamScheduleReq;
+import com.woodongleee.src.teams_2.model.TeamApplyListRes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
+import java.util.List;
 
 @Repository
 public class Teams_2Dao {
@@ -116,5 +118,14 @@ public class Teams_2Dao {
     public String getTeamApplyStatus(int teamApplyIdx) {
         String Query = "select status from TeamApply where teamApplyIdx=?;";
         return this.jdbcTemplate.queryForObject(Query, String.class, teamApplyIdx);
+    }
+
+    public List<TeamApplyListRes> getTeamApplyList(int teamIdx) {
+        String Query = "select teamApplyIdx, userIdx, status from TeamApply where teamIdx=?;";
+        return this.jdbcTemplate.query(Query, (rs, rowNum) ->
+                new TeamApplyListRes(
+                        rs.getInt("teamApplyIdx"),
+                        rs.getInt("userIdx"),
+                        rs.getString("status")), teamIdx);
     }
 }
