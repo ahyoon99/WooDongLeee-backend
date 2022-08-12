@@ -38,8 +38,9 @@ public class UserMatchProvider {
             }
 
             return userMatchDao.getUserMatchPosts(userIdx, town, startTime, endTime);
-        }
-        catch (Exception e){
+        } catch (BaseException e) {
+            throw e;
+        } catch (Exception e) {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
     }

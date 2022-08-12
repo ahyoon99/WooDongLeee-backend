@@ -189,7 +189,58 @@ public class TeamMatchService {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
     }
+    
+    public void applyTeamMatch(int userIdxByJwt, int matchPostIdx) throws BaseException{
+        try{
+            // 0. 탈퇴한 유저입니다.
+            if(teamMatchDao.checkUserStatus(userIdxByJwt).equals("INACTIVE")){   // 사용자가 탈퇴한 회원인 경우
+                throw new BaseException(BaseResponseStatus.LEAVED_USER);
+            }
 
+            // 1. 팀 매칭 신청은 리더만 가능합니다.
+            if(teamMatchDao.isLeader(userIdxByJwt).equals("F")){  // 사용자가 리더가 아닌 경우
+                throw new BaseException(BaseResponseStatus.UNAUTHORIZED_ACCESS);
+            }
+
+            // 2. 존재하지 않는 팀 매칭 글입니다.
+            if(teamMatchDao.existTeamMatchPostIdx(matchPostIdx) == 0){    // 팀 매칭글이 존재하지 않는 경우
+                throw new BaseException(BaseResponseStatus.MATCH_POST_DOES_NOT_EXIST);
+            }
+
+            // 3. 팀 매칭 모집이 완료된 경기입니다.
+            if(teamMatchDao.checkApplyStatus(matchPostIdx)>=1){     // 이미 팀 매칭이 완료된 경우
+                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE);
+            }
+
+            // 4. 팀 매칭 신청 기한이 지났습니다. 경기 시작 2시간 전까지만 팀 매칭 가능.
+            int teamScheduleIdx = teamMatchDao.selectScheduleIdxByMatchPostIdx(matchPostIdx); // 매칭글 idx로 팀 일정(경기) idx 찾기
+            String start = teamMatchDao.selectStartTime(teamScheduleIdx);
+            SimpleDateFormat formatedTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+            Date startDate = formatedTime.parse(start);     // 경기 시작 시간 세팅하기
+            Calendar startTime = Calendar.getInstance();
+            startTime.setTime(startDate);
+
+            startTime.add(Calendar.HOUR, -1);
+            startTime.add(Calendar.MINUTE, -59);
+
+            Date date = new Date();     // 현재 시간 세팅하기
+            Calendar now = Calendar.getInstance();
+            now.setTime(date);
+
+            if(startTime.compareTo(now)==-1){   // 팀 매칭 신청 기간이 지난 경우
+                throw new BaseException(BaseResponseStatus.MATCH_CREATE_PERIOD_ERROR);
+            }
+
+            // <<< 위의 조건들 모두 만족 시, 팀 매칭 신청 >>
+            teamMatchDao.applyTeamMatch(userIdxByJwt, matchPostIdx);
+        }catch(BaseException e){
+            throw e;
+        }catch(Exception exception){
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
+    
     public void cancelApplyTeamMatch(int userIdxByJwt, int matchPostIdx) throws BaseException {
         try {
             // 0. 탈퇴한 유저입니다.

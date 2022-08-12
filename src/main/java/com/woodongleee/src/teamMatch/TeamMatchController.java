@@ -92,6 +92,19 @@ public class TeamMatchController {
     }
 
     @ResponseBody
+    @PostMapping("/{matchPostIdx}/apply")
+    public BaseResponse<String> applyTeamMatch(@PathVariable int matchPostIdx){
+        try {
+            int userIdxByJwt = jwtService.getUserIdx();
+            teamMatchService.applyTeamMatch(userIdxByJwt, matchPostIdx);
+            String result = "팀 매칭 신청을 성공하였습니다.";
+            return new BaseResponse<>(result);
+        } catch (BaseException exception) {
+            return new BaseResponse<>(exception.getStatus());
+        }
+    }
+
+    @ResponseBody
     @PatchMapping("/{matchPostIdx}/apply")
     public BaseResponse<String> cancelApplyTeamMatch(@PathVariable int matchPostIdx){
         try {
@@ -104,3 +117,4 @@ public class TeamMatchController {
         }
     }
 }
+
