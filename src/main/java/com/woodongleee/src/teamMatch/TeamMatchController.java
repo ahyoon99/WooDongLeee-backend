@@ -115,6 +115,34 @@ public class TeamMatchController {
             return new BaseResponse<>(exception.getStatus());
         }
     }
+    
+    @ResponseBody
+    @PostMapping("/result/{teamScheduleIdx}")
+    public BaseResponse<PostGameResultRes> postGameResult(@PathVariable("teamScheduleIdx") int teamScheduleIdx, @RequestBody PostGameResultReq postGameResultReq){
+        try {
+            // teamScheduleIdx에서 homeIdx(팀 idx), awayIdx(팀 idx) 가져오기
+            int homeIdx = teamMatchProvider.selectHomeIdxByTeamScheduleIdx(teamScheduleIdx);
+
+            // homeIdx를 가지는 리더 userIdx 가져오기, 결과 입력은 home팀의 주장만 가능!
+            int userIdx = teamMatchProvider.selectLeaderIdxByTeamIdx(homeIdx);
+
+            int userIdxByJwt = jwtService.getUserIdx();
+            if(userIdx != userIdxByJwt){
+                return new BaseResponse<>(BaseResponseStatus.INVALID_JWT);
+            }
+
+            if (postGameResultReq.getAwayScore()<0) {     // 원정팀 점수에 대한 validation
+                return new BaseResponse<>(BaseResponseStatus.INVALID_SCORE_SCOPE);
+            }
+            if (postGameResultReq.getHomeScore()<0) {     // 홈팀 점수에 대한 validation
+                return new BaseResponse<>(BaseResponseStatus.INVALID_SCORE_SCOPE);
+            }
+            BaseResponse<PostGameResultRes> postGameResultRes = teamMatchService.postGameResult(postGameResultReq);
+            return postGameResultRes;
+        } catch (BaseException exception) {
+            return new BaseResponse<>(exception.getStatus());
+        }
+    }
 
     @ResponseBody
     @GetMapping("/{teamScheduleIdx}/apply")
