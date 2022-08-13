@@ -3,16 +3,15 @@ package com.woodongleee.src.teamMatch;
 import com.woodongleee.config.BaseResponse;
 import com.woodongleee.config.BaseException;
 import com.woodongleee.config.BaseResponseStatus;
-import com.woodongleee.src.teamMatch.model.ModifyTeamMatchPostsReq;
-import com.woodongleee.src.teamMatch.model.ModifyTeamMatchPostsRes;
-import com.woodongleee.src.teamMatch.model.PostTeamMatchPostsReq;
-import com.woodongleee.src.teamMatch.model.PostTeamMatchPostsRes;
+import com.woodongleee.src.teamMatch.model.*;
 import com.woodongleee.utils.JwtService;
 import com.woodongleee.utils.SHA256;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/team-match")
@@ -112,6 +111,23 @@ public class TeamMatchController {
             teamMatchService.cancelApplyTeamMatch(userIdxByJwt, matchPostIdx);
             String result = "팀 매칭 신청 취소를 성공하였습니다.";
             return new BaseResponse<>(result);
+        } catch (BaseException exception) {
+            return new BaseResponse<>(exception.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @GetMapping("/{teamScheduleIdx}/apply")
+    public BaseResponse<List<GetApplyTeamRes>> getApplyTeam(@PathVariable int teamScheduleIdx) {
+        try {
+            // teamScheduleIdx를 이용해서 작성자의 userIdx 찾아오기
+            int userIdx = teamMatchProvider.selectUserIdxByTeamScheduleIdx(teamScheduleIdx);
+            int userIdxByJwt = jwtService.getUserIdx();
+            if(userIdx != userIdxByJwt){
+                return new BaseResponse<>(BaseResponseStatus.INVALID_JWT);
+            }
+            List<GetApplyTeamRes> getApplyTeamResList = teamMatchProvider.getApplyTeam(teamScheduleIdx);
+            return new BaseResponse<>(getApplyTeamResList);
         } catch (BaseException exception) {
             return new BaseResponse<>(exception.getStatus());
         }
