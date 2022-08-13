@@ -1,9 +1,6 @@
 package com.woodongleee.src.teams;
 
-import com.woodongleee.src.teams.model.GetTeamsinfoRes;
-import com.woodongleee.src.teams.model.GetUserInfoRes;
-import com.woodongleee.src.teams.model.GetTeamScheduleInfoRes;
-import com.woodongleee.src.teams.model.GetTeamsScheduleRes;
+import com.woodongleee.src.teams.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -21,7 +18,7 @@ public class TeamsDao {
     }
 
     public int checkTeamIdxExist(int teamIdx){
-        String checkTeamIdxExistQuery="SELECT exists(select teamIdx from TeamInfo where teamIdx=?);";
+        String checkTeamIdxExistQuery="SELECT exists(select teamIdx from TeamInfo where teamIdx=? and status='ACTIVE');";
         return this.jdbcTemplate.queryForObject(checkTeamIdxExistQuery, int.class, teamIdx);
     }
     public int checkTeamScheduleIdxExist(int teamScheduleIdx){
@@ -50,6 +47,15 @@ public class TeamsDao {
         String checkQuery="SELECT exists(select teamApplyIdx from TeamApply where userIdx=? and teamIdx=?);";
         Object[] Params= new Object[]{userIdx, teamIdx};
         return this.jdbcTemplate.queryForObject(checkQuery, int.class, Params);
+    }
+    public int isNameDuplicated(String name){
+        String isNameDuplicatedQuery="SELECT exists(select name from TeamInfo where name=?);";
+        return this.jdbcTemplate.queryForObject(isNameDuplicatedQuery, int.class, name);
+    }
+    public int checkDeletion(int userIdx, int teamScheduleIdx){
+        String checkDeletionQuery="SELECT exists(select userScheduleIdx from UserSchedule where userIdx=? and teamScheduleIdx=?);";
+        Object[] Params=new Object[]{userIdx, teamScheduleIdx};
+        return this.jdbcTemplate.queryForObject(checkDeletionQuery,int.class, Params);
     }
     public List<GetTeamsinfoRes> getTeaminfoByTown(String town){
         String selectTeamsinfoquery="SELECT * from TeamInfo where LOCATE(?, town)>0";
@@ -150,9 +156,12 @@ public class TeamsDao {
         this.jdbcTemplate.update(cancelQuery, Params);
     }
     public void leaveTeam(int userIdx, int teamIdx){
-        String leaveQuery="update User as U, TeamInfo as TI set U.teamIdx=null, TI.isRecruiting=\n"
-        +"case when TI.isRecruiting='FALSE' then 'TRUE' ELSE 'TRUE' end where U.teamIdx=TI.teamIdx and U.userIdx=? and U.teamIdx=?;";
+        String query="UPDATE TeamSchedule TS join UserSchedule US on TS.teamScheduleIdx=US.teamScheduleIdx SET joinCnt=joinCnt-1 where US.userIdx=?";
+        String deleteQuery="DELETE FROM UserSchedule where userIdx=? and teamScheduleIdx IN (select teamScheduleIdx from TeamSchedule TS join TeamInfo TI on TS.awayIdx = TI.teamIdx or TS.homeIdx=TI.teamIdx where TI.teamIdx=?)";
+        String leaveQuery="update User as U set U.teamIdx=null where U.userIdx=? and U.teamIdx=?;";
         Object[] Params= new Object[]{userIdx, teamIdx};
+        this.jdbcTemplate.update(query, userIdx);
+        this.jdbcTemplate.update(deleteQuery, Params);
         this.jdbcTemplate.update(leaveQuery, Params);
     }
 
@@ -169,4 +178,60 @@ public class TeamsDao {
                 rs.getString("status")
         ), town);
     }
+    public void createTeam(int userIdx, PostTeamReq newTeam){
+        String createTeamQuery="INSERT INTO TeamInfo(name, town, teamProfileImgUrl, introduce) values(?, ?, ?, ?);";
+        String updateQuery="UPDATE User SET teamIdx=(select teamIdx from TeamInfo where name=?) where userIdx=?;";
+
+        Object[] Params= new Object[]{newTeam.getName(), newTeam.getTown(), newTeam.getTeamProfileImgUrl(), newTeam.getIntroduce()};
+        Object[] Param= new Object[]{newTeam.getName(), userIdx};
+
+        this.jdbcTemplate.update(createTeamQuery, Params);
+        this.jdbcTemplate.update(updateQuery, Param);
+
+    }
+    public int isLeader(int userIdx){
+        String Query = "select case isLeader\n" +
+                "    when 'T' then 1\n" +
+                "    else -1\n" +
+                "end\n" +
+                "from User\n" +
+                "where userIdx=?;";
+
+        return this.jdbcTemplate.queryForObject(Query, int.class, userIdx);
+    }
+    public void modifyTeamInfo(int teamIdx, ModifyTeamInfoReq modifyTeam){
+        String modifyQuery="UPDATE TeamInfo SET name=?, town=?, teamProfileImgUrl=?, introduce=?, isRecruiting=? where teamIdx=?;";
+        Object[] Params= new Object[]{modifyTeam.getName(), modifyTeam.getTown(), modifyTeam.getTeamProfileImgUrl(), modifyTeam.getIntroduce(), modifyTeam.getIsRecruiting(), teamIdx};
+        this.jdbcTemplate.update(modifyQuery, Params);
+    }
+    public VotePossibilityRes votePossibilityRes(int teamScheduleIdx){
+        String query="SELECT startTime from TeamSchedule where teamScheduleIdx=?;";
+        return this.jdbcTemplate.queryForObject(query, (rs, rowNum) -> new VotePossibilityRes(
+                rs.getString("startTime")
+        ), teamScheduleIdx);
+    }
+    public void vote(int userIdx, int teamIdx, int teamScheduleIdx){
+        String voteQuery="UPDATE TeamSchedule TS join TeamInfo TI on TS.awayIdx = TI.teamIdx or TS.homeIdx=TI.teamIdx\n"+
+                "set joinCnt=joinCnt+1\n"+
+                "where TI.teamIdx=? and TS.teamScheduleIdx=?;";
+        String insertQuery="INSERT INTO UserSchedule(teamScheduleIdx, userIdx) values(?, ?);";
+        Object[] Params= new Object[]{teamIdx, teamScheduleIdx};
+        Object[] Param= new Object[]{teamScheduleIdx, userIdx};
+
+        this.jdbcTemplate.update(voteQuery, Params);
+        this.jdbcTemplate.update(insertQuery, Param);
+
+    }
+    public void cancelVote(int userIdx, int teamIdx, int teamScheduleIdx){
+        String cancelVoteQuery="UPDATE TeamSchedule TS join TeamInfo TI on TS.awayIdx = TI.teamIdx or TS.homeIdx=TI.teamIdx\n"+
+                "set joinCnt=joinCnt-1\n"+
+                "where TI.teamIdx=? and TS.teamScheduleIdx=?;";
+        String deleteQuery="DELETE FROM UserSchedule where userIdx=? and teamScheduleIdx=?;";
+        Object[] Params= new Object[]{teamIdx, teamScheduleIdx};
+        Object[] Param= new Object[]{userIdx, teamScheduleIdx};
+
+        this.jdbcTemplate.update(cancelVoteQuery, Params);
+        this.jdbcTemplate.update(deleteQuery, Param);
+    }
+
 }
