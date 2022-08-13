@@ -46,6 +46,7 @@ public enum BaseResponseStatus {
     MATCH_ALREADY_EXIST(false, 3050, "이미 용병/팀 매칭중인 경기입니다."),
     SCHEDULE_ALREADY_EXIST(false, 3051, "해당 시간에 이미 일정이 있습니다."),
     TEAM_ALREADY_EXIST(false, 3052, "이미 팀에 가입되어 있습니다"),
+    MATCH_APPLY_ALREADY_ACCEPTED(false, 3053, "이미 승인한 신청입니다."),
     TEAM_NOT_RECRUITING(false, 3060, "팀원 모집중이 아닌 팀입니다."),
     NOT_TEAMMATE(false, 3061, "팀원이 아닙니다."),
     TEAM_DISMISSED(false, 3062, "이미 해체된 팀입니다."),

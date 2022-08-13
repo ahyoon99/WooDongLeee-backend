@@ -30,4 +30,13 @@ public class TeamMatchProvider {
         int userIdx = teamMatchDao.whoWritePost(matchPostIdx); // 매칭글 idx로 매칭글 작성한 유저 idx 찾기
         return userIdx;
     }
+
+    public int selectHomeLeaderIdxByMatchApplyIdx(int matchApplyIdx) throws BaseException{
+        // 팀 신청 내역이 존재하지 않습니다.
+        if(teamMatchDao.existMatchApplyIdx(matchApplyIdx)==0){
+            throw new BaseException(BaseResponseStatus.MATCH_APPLY_DOES_NOT_EXIST);
+        }
+        int userIdx = teamMatchDao.selectHomeLeaderIdxByMatchApplyIdx(matchApplyIdx);
+        return userIdx;
+    }
 }
