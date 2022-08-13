@@ -363,4 +363,40 @@ public class TeamMatchService {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
     }
+
+    public void rejectTeamMatchApply(int userIdxByJwt, int matchApplyIdx) throws BaseException{
+        try{
+            // 0. 탈퇴한 유저입니다.
+            if (teamMatchDao.checkUserStatus(userIdxByJwt).equals("INACTIVE")) {   // 사용자가 탈퇴한 회원인 경우
+                throw new BaseException(BaseResponseStatus.LEAVED_USER);
+            }
+
+            // 1. 팀 매칭 신청은 리더만 가능합니다.
+            if (teamMatchDao.isLeader(userIdxByJwt).equals("F")) {  // 사용자가 리더가 아닌 경우
+                throw new BaseException(BaseResponseStatus.UNAUTHORIZED_ACCESS);
+            }
+
+            // 2. 존재하지 않는 팀 매칭 신청 내역입니다.
+            if (teamMatchDao.existMatchApplyIdx(matchApplyIdx) == 0) {    // 팀 매칭 신청이 존재하지 않는 경우
+                throw new BaseException(BaseResponseStatus.MATCH_APPLY_DOES_NOT_EXIST);
+            }
+
+            // 3. 이미 거절한 신청입니다.
+            if(teamMatchDao.checkMatchApplyIdxStatus(matchApplyIdx).equals("DENIED")){
+                throw new BaseException(BaseResponseStatus.MATCH_APPLY_ALREADY_DENIED);
+            }
+
+            // 4. 취소된 신청입니다.
+            if(teamMatchDao.checkMatchApplyIdxStatus(matchApplyIdx).equals("CANCELED")){
+                throw new BaseException(BaseResponseStatus.MATCH_APPLY_ALREADY_CANCELED);
+            }
+
+            // <<< 위의 조건들 모두 만족 시, 팀 매칭 신청 거절 >>
+            teamMatchDao.rejectTeamMatchApply(matchApplyIdx);
+        } catch (BaseException e) {
+            throw e;
+        } catch (Exception exception) {
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
 }
