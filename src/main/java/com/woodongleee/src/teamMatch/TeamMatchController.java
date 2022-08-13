@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/team-match")
 public class TeamMatchController {
@@ -113,12 +115,11 @@ public class TeamMatchController {
             return new BaseResponse<>(exception.getStatus());
         }
     }
-
+    
     @ResponseBody
     @PostMapping("/result/{teamScheduleIdx}")
     public BaseResponse<PostGameResultRes> postGameResult(@PathVariable("teamScheduleIdx") int teamScheduleIdx, @RequestBody PostGameResultReq postGameResultReq){
         try {
-
             // teamScheduleIdx에서 homeIdx(팀 idx), awayIdx(팀 idx) 가져오기
             int homeIdx = teamMatchProvider.selectHomeIdxByTeamScheduleIdx(teamScheduleIdx);
 
@@ -136,9 +137,25 @@ public class TeamMatchController {
             if (postGameResultReq.getHomeScore()<0) {     // 홈팀 점수에 대한 validation
                 return new BaseResponse<>(BaseResponseStatus.INVALID_SCORE_SCOPE);
             }
-
             BaseResponse<PostGameResultRes> postGameResultRes = teamMatchService.postGameResult(postGameResultReq);
             return postGameResultRes;
+        } catch (BaseException exception) {
+            return new BaseResponse<>(exception.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @GetMapping("/{teamScheduleIdx}/apply")
+    public BaseResponse<List<GetApplyTeamRes>> getApplyTeam(@PathVariable int teamScheduleIdx) {
+        try {
+            // teamScheduleIdx를 이용해서 작성자의 userIdx 찾아오기
+            int userIdx = teamMatchProvider.selectUserIdxByTeamScheduleIdx(teamScheduleIdx);
+            int userIdxByJwt = jwtService.getUserIdx();
+            if(userIdx != userIdxByJwt){
+                return new BaseResponse<>(BaseResponseStatus.INVALID_JWT);
+            }
+            List<GetApplyTeamRes> getApplyTeamResList = teamMatchProvider.getApplyTeam(teamScheduleIdx);
+            return new BaseResponse<>(getApplyTeamResList);
         } catch (BaseException exception) {
             return new BaseResponse<>(exception.getStatus());
         }

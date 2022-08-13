@@ -1,5 +1,6 @@
 package com.woodongleee.src.teamMatch;
 
+import com.woodongleee.src.teamMatch.model.GetApplyTeamRes;
 import com.woodongleee.src.teamMatch.model.ModifyTeamMatchPostsReq;
 import com.woodongleee.src.teamMatch.model.PostGameResultReq;
 import com.woodongleee.src.teamMatch.model.PostTeamMatchPostsReq;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.text.ParseException;
+import java.util.List;
 
 @Repository
 public class TeamMatchDao {
@@ -194,4 +196,33 @@ public class TeamMatchDao {
         Object [] updateTeamScoreParams = new Object[] {homeScore, homeIdx};
         this.jdbcTemplate.update(updateTeamScoreQuery, updateTeamScoreParams);
     }
+    
+    // 팀 매칭 신청 목록 조회하기
+    public List<GetApplyTeamRes> getApplyTeamRes(int teamScheduleIdx) {
+        String getApplyTeamResQuery = "select T.teamIdx, T.name, T.town, T.teamScore, T.teamProfileImgUrl, T.introduce, MA.status\n" +
+                "from MatchApply MA\n" +
+                "join MatchPost MP on MA.matchPostIdx = MP.matchPostIdx\n" +
+                "join User U on U.userIdx = MA.userIdx\n" +
+                "join Teaminfo T on U.teamIdx = T.teamIdx\n" +
+                "where MP.teamScheduleIdx=? and MP.type='TEAM'";
+        return this.jdbcTemplate.query(getApplyTeamResQuery, (rs, rowNum) -> new GetApplyTeamRes(
+                rs.getInt("teamIdx"),
+                rs.getString("name"),
+                rs.getString("town"),
+                rs.getInt("teamScore"),
+                rs.getString("teamProfileImgUrl"),
+                rs.getString("introduce"),
+                rs.getString("status")
+        ), teamScheduleIdx);
+    }
+
+    // teamSchedule을 만든 userIdx 찾기
+    public int selectUserIdxByTeamScheduleIdx(int teamScheduleIdx) {
+        String selectUserIdxByTeamScheduleIdxQuery = "select U.userIdx\n" +
+                "from teamSchedule T\n" +
+                "join User U on U.teamIdx = T.homeIdx\n" +
+                "where teamScheduleIdx=? and U.isLeader = 'T'";
+        int selectUserIdxByTeamScheduleIdxParams = teamScheduleIdx;
+        return this.jdbcTemplate.queryForObject(selectUserIdxByTeamScheduleIdxQuery, int.class, selectUserIdxByTeamScheduleIdxParams);
+    }        
 }
