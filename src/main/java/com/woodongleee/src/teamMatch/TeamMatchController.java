@@ -73,4 +73,48 @@ public class TeamMatchController {
             return new BaseResponse<>(exception.getStatus());
         }
     }
+
+    @ResponseBody
+    @DeleteMapping("/{matchPostIdx}")
+    public BaseResponse<String> deleteTeamMatchPosts(@PathVariable int matchPostIdx){
+        try {
+            int userIdx = teamMatchProvider.selectUserIdxByMatchPostIdx(matchPostIdx);  // 매칭글 idx로 매칭글 작성한 유저 idx 찾기
+            int userIdxByJwt = jwtService.getUserIdx();
+            if(userIdx != userIdxByJwt){
+                return new BaseResponse<>(BaseResponseStatus.INVALID_JWT);
+            }
+            teamMatchService.deleteTeamMatchPosts(userIdxByJwt, matchPostIdx);
+            String result = "삭제를 성공했습니다.";
+            return new BaseResponse<>(result);
+        } catch (BaseException exception) {
+            return new BaseResponse<>(exception.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @PostMapping("/{matchPostIdx}/apply")
+    public BaseResponse<String> applyTeamMatch(@PathVariable int matchPostIdx){
+        try {
+            int userIdxByJwt = jwtService.getUserIdx();
+            teamMatchService.applyTeamMatch(userIdxByJwt, matchPostIdx);
+            String result = "팀 매칭 신청을 성공하였습니다.";
+            return new BaseResponse<>(result);
+        } catch (BaseException exception) {
+            return new BaseResponse<>(exception.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @PatchMapping("/{matchPostIdx}/apply")
+    public BaseResponse<String> cancelApplyTeamMatch(@PathVariable int matchPostIdx){
+        try {
+            int userIdxByJwt = jwtService.getUserIdx();
+            teamMatchService.cancelApplyTeamMatch(userIdxByJwt, matchPostIdx);
+            String result = "팀 매칭 신청 취소를 성공하였습니다.";
+            return new BaseResponse<>(result);
+        } catch (BaseException exception) {
+            return new BaseResponse<>(exception.getStatus());
+        }
+    }
 }
+
