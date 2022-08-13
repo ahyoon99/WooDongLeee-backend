@@ -3,10 +3,7 @@ package com.woodongleee.src.teamMatch;
 import com.woodongleee.config.BaseException;
 import com.woodongleee.config.BaseResponse;
 import com.woodongleee.config.BaseResponseStatus;
-import com.woodongleee.src.teamMatch.model.ModifyTeamMatchPostsReq;
-import com.woodongleee.src.teamMatch.model.ModifyTeamMatchPostsRes;
-import com.woodongleee.src.teamMatch.model.PostTeamMatchPostsReq;
-import com.woodongleee.src.teamMatch.model.PostTeamMatchPostsRes;
+import com.woodongleee.src.teamMatch.model.*;
 import com.woodongleee.utils.JwtService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -298,6 +295,71 @@ public class TeamMatchService {
         } catch (BaseException e) {
             throw e;
         } catch (Exception exception) {
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
+
+    public BaseResponse<PostGameResultRes> postGameResult(PostGameResultReq postGameResultReq) throws BaseException{
+        try{
+            // teamScheduleIdx에서 homeIdx(팀 idx), awayIdx(팀 idx) 가져오기
+            int homeIdx = teamMatchProvider.selectHomeIdxByTeamScheduleIdx(postGameResultReq.getTeamScheduleIdx());
+            int awayIdx = teamMatchProvider.selectAwayIdxByTeamScheduleIdx(postGameResultReq.getTeamScheduleIdx());
+
+            // homeIdx를 가지는 리더 userIdx 가져오기
+            int userIdx = teamMatchProvider.selectLeaderIdxByTeamIdx(homeIdx);
+
+            // 0. 탈퇴한 유저입니다.
+            if(teamMatchDao.checkUserStatus(userIdx).equals("INACTIVE")){   // 사용자가 탈퇴한 회원인 경우
+                return new BaseResponse<>(BaseResponseStatus.LEAVED_USER);
+            }
+
+            // 1. 경기 결과 추가는 리더만 가능합니다.
+            if(teamMatchDao.isLeader(userIdx).equals("F")){    // 사용자가 리더가 아닌 경우
+                return new BaseResponse<>(BaseResponseStatus.UNAUTHORIZED_ACCESS);
+            }
+
+            // 2. 존재하지 않는 팀 일정(경기)입니다.
+            if(teamMatchDao.existTeamMatch(postGameResultReq.getTeamScheduleIdx()) == 0){    // 탐 일정이 존재하지 않는 경우
+                throw new BaseException(BaseResponseStatus.SCHEDULE_DOES_NOT_EXIST);
+            }
+
+            // 3. 경기가 아직 종료되지 않았습니다. 경기가 끝나는 시간 부터 경기 결과 추가 가능.
+            String end = teamMatchDao.selectEndTime(postGameResultReq.getTeamScheduleIdx());
+            SimpleDateFormat formatedTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+            Date endDate = formatedTime.parse(end);     // 경기 시작 시간 세팅하기
+            Calendar endTime = Calendar.getInstance();
+            endTime.setTime(endDate);
+
+            Date date = new Date();     // 현재 시간 세팅하기
+            Calendar now = Calendar.getInstance();
+            now.setTime(date);
+
+            if(now.compareTo(endTime)==-1){   // 경기 결과 추가 기간이 아닌 경우
+                return new BaseResponse<>(BaseResponseStatus.GAME_RESULT_PERIOD_ERROR);
+            }
+
+            // <<< 위의 조건들 모두 만족 시, 경기 결과 추가 >>
+            // 1. GameResult 테이블에 데이터 추가
+            int gameResultIdx = teamMatchDao.postGameResult(postGameResultReq);
+
+            // 2. TeamInfo 테이블의 teamScore 변경
+            int homeScore = teamMatchDao.selectTeamScoreByTeamIdx(homeIdx);
+            int awayScore = teamMatchDao.selectTeamScoreByTeamIdx(awayIdx);
+            if(postGameResultReq.getAwayScore()>postGameResultReq.getHomeScore()){  // 홈 팀이 졌을 때
+                teamMatchDao.updateTeamScore(homeIdx, homeScore+1);
+                teamMatchDao.updateTeamScore(awayIdx, awayScore+3);
+            }
+            else if(postGameResultReq.getAwayScore()<postGameResultReq.getHomeScore()){     // 홈 팀이 이겼을 때
+                teamMatchDao.updateTeamScore(homeIdx, homeScore+3);
+                teamMatchDao.updateTeamScore(awayIdx, awayScore+1);
+            }
+            else if(postGameResultReq.getAwayScore()==postGameResultReq.getHomeScore()){     // 비겼을 때
+                teamMatchDao.updateTeamScore(homeIdx, homeScore+2);
+                teamMatchDao.updateTeamScore(awayIdx, awayScore+2);
+            }
+            return new BaseResponse<>(new PostGameResultRes(gameResultIdx));
+        }catch(Exception exception){
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
     }
