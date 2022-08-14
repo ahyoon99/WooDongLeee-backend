@@ -160,5 +160,17 @@ public class TeamMatchController {
             return new BaseResponse<>(exception.getStatus());
         }
     }
+
+    @ResponseBody
+    @GetMapping("")
+    public BaseResponse<List<GetTeamMatchPostRes>> getTeamMatchPosts(@RequestParam String town, @RequestParam String startTime, @RequestParam String endTime) {
+        try {
+            int userIdxByJwt = jwtService.getUserIdx();
+            List<GetTeamMatchPostRes> getTeamMatchPostResList = teamMatchProvider.getTeamMatchPosts(userIdxByJwt, town, startTime, endTime);
+            return new BaseResponse<>(getTeamMatchPostResList);
+        } catch (BaseException exception) {
+            return new BaseResponse<>(exception.getStatus());
+        }
+    }
 }
 
