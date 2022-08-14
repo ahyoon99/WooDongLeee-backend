@@ -157,7 +157,7 @@ public class TeamsDao {
     }
     public void leaveTeam(int userIdx, int teamIdx){
         String query="UPDATE TeamSchedule TS join UserSchedule US on TS.teamScheduleIdx=US.teamScheduleIdx SET joinCnt=joinCnt-1 where US.userIdx=?";
-        String deleteQuery="DELETE FROM UserSchedule where userIdx=? and teamScheduleIdx IN (select teamScheduleIdx from TeamSchedule TS join TeamInfo TI on TS.awayIdx = TI.teamIdx or TS.homeIdx=TI.teamIdx where TI.teamIdx=?)";
+        String deleteQuery="DELETE FROM UserSchedule where userIdx=? and teamScheduleIdx IN (select teamScheduleIdx from TeamSchedule TS join TeamInfo TI on TS.homeIdx=TI.teamIdx where TI.teamIdx=?)";
         String leaveQuery="update User as U set U.teamIdx=null where U.userIdx=? and U.teamIdx=?;";
         Object[] Params= new Object[]{userIdx, teamIdx};
         this.jdbcTemplate.update(query, userIdx);
@@ -211,7 +211,7 @@ public class TeamsDao {
         ), teamScheduleIdx);
     }
     public void vote(int userIdx, int teamIdx, int teamScheduleIdx){
-        String voteQuery="UPDATE TeamSchedule TS join TeamInfo TI on TS.awayIdx = TI.teamIdx or TS.homeIdx=TI.teamIdx\n"+
+        String voteQuery="UPDATE TeamSchedule TS join TeamInfo TI on TS.homeIdx=TI.teamIdx\n"+
                 "set joinCnt=joinCnt+1\n"+
                 "where TI.teamIdx=? and TS.teamScheduleIdx=?;";
         String insertQuery="INSERT INTO UserSchedule(teamScheduleIdx, userIdx) values(?, ?);";
