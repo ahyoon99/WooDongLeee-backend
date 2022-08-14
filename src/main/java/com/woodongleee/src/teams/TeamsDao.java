@@ -223,7 +223,7 @@ public class TeamsDao {
 
     }
     public void cancelVote(int userIdx, int teamIdx, int teamScheduleIdx){
-        String cancelVoteQuery="UPDATE TeamSchedule TS join TeamInfo TI on TS.awayIdx = TI.teamIdx or TS.homeIdx=TI.teamIdx\n"+
+        String cancelVoteQuery="UPDATE TeamSchedule TS join TeamInfo TI on TS.homeIdx=TI.teamIdx\n"+
                 "set joinCnt=joinCnt-1\n"+
                 "where TI.teamIdx=? and TS.teamScheduleIdx=?;";
         String deleteQuery="DELETE FROM UserSchedule where userIdx=? and teamScheduleIdx=?;";
