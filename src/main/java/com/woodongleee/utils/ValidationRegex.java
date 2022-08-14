@@ -18,5 +18,11 @@ public class ValidationRegex {
         Matcher matcher = pattern.matcher(target);
         return matcher.find();
     }
-
+    public static boolean isRegexTeamName(String target){
+        //한글, 영문, 숫자 조합
+        String regex="^[ㄱ-ㅎ가-힣a-zA-Z0-9]{3,20}$";
+        Pattern pattern=Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+        Matcher matcher=pattern.matcher(target);
+        return matcher.find();
+    }
 }
