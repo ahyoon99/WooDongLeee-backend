@@ -107,6 +107,8 @@ public class UserController {
             userService.createCode(email, code);
             emailService.sendSimpleMessage(email, code);
             return new BaseResponse<>("인증번호가 전송되었습니다.");
+        } catch (BaseException e){
+            return new BaseResponse<>(e.getStatus());
         } catch (Exception e) {
             return new BaseResponse<>(EMAIL_SERVER_ERROR);
         }

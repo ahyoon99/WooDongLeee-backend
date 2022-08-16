@@ -1,13 +1,13 @@
 package com.woodongleee.src.teamMatch;
 
-import com.woodongleee.src.teamMatch.model.ModifyTeamMatchPostsReq;
-import com.woodongleee.src.teamMatch.model.PostTeamMatchPostsReq;
+import com.woodongleee.src.teamMatch.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.text.ParseException;
+import java.util.List;
 
 @Repository
 public class TeamMatchDao {
@@ -135,6 +135,130 @@ public class TeamMatchDao {
         this.jdbcTemplate.update(cancelApplyTeamMatchQuery, cancelApplyTeamMatchParams);
     }
 
+    // 팀 일정의 끝나는 시간 가져오기
+    public String selectEndTime(int teamScheduleIdx) throws ParseException {
+        String selectEndTimeQuery = "select endTime from teamSchedule where teamScheduleIdx=?";
+        int selectEndTimeParams = teamScheduleIdx;
+        return this.jdbcTemplate.queryForObject(selectEndTimeQuery, String.class, selectEndTimeParams);
+    }
+
+    // 팀 일정에서 homeIdx 가져오기
+    public int selectHomeIdxByTeamScheduleIdx(int teamScheduleIdx) {
+        String selectHomeIdxByTeamScheduleIdxQuery = "select homeIdx from teamSchedule where teamScheduleIdx=?";
+        int selectHomeIdxByTeamScheduleIdxParams = teamScheduleIdx;
+        return this.jdbcTemplate.queryForObject(selectHomeIdxByTeamScheduleIdxQuery, int.class, selectHomeIdxByTeamScheduleIdxParams);
+    }
+
+    // 팀 일정에서 awayIdx 가져오기
+    public int selectAwayIdxByTeamScheduleIdx(int teamScheduleIdx) {
+        String selectAwayIdxByTeamScheduleIdxQuery = "select awayIdx from teamSchedule where teamScheduleIdx=?";
+        int selectAwayIdxByTeamScheduleIdxParams = teamScheduleIdx;
+        return this.jdbcTemplate.queryForObject(selectAwayIdxByTeamScheduleIdxQuery, int.class, selectAwayIdxByTeamScheduleIdxParams);
+    }
+
+    // 팀 존재 여부 확인하기
+    public int existTeamInfo(int teamIdx) { // 탐 일정이 존재하지 않는 경우, 0 리턴
+        String existTeamInfoQuery = "select count(*) from TeamInfo where teamIdx=?";
+        int existTeamInfoParams = teamIdx;
+        return this.jdbcTemplate.queryForObject(existTeamInfoQuery, int.class, existTeamInfoParams);
+    }
+
+    // 팀의 리더 userIdx 가져오기
+    public int selectLeaderIdxByTeamIdx(int teamIdx) {
+        String selectLeaderIdxByTeamIdxQuery = "select userIdx from User where teamIdx=? and isLeader='T'";
+        int selectLeaderIdxByTeamIdxParams = teamIdx;
+        return this.jdbcTemplate.queryForObject(selectLeaderIdxByTeamIdxQuery, int.class, selectLeaderIdxByTeamIdxParams);
+    }
+
+    // 경기 결과 추가하기
+    public int postGameResult(PostGameResultReq postGameResultReq) {
+        String postGameResultQuery = "INSERT INTO GameResult (teamScheduleIdx, homeScore, awayScore) VALUES (?,?,?)";
+        Object []postGameResultParams = new Object[] {postGameResultReq.getTeamScheduleIdx(), postGameResultReq.getHomeScore(),postGameResultReq.getAwayScore()};
+        this.jdbcTemplate.update(postGameResultQuery, postGameResultParams);
+
+        String lastInsertIdxQuery = "select last_insert_id()";
+        return jdbcTemplate.queryForObject(lastInsertIdxQuery, int.class);
+    }
+
+    // 팀의 점수 조회하기
+    public int selectTeamScoreByTeamIdx(int teamIdx) {
+        String selectTeamScoreByTeamIdxQuery = "select teamScore from TeamInfo where teamIdx=?";
+        int selectTeamScoreByTeamIdxParams = teamIdx;
+        return this.jdbcTemplate.queryForObject(selectTeamScoreByTeamIdxQuery, int.class, selectTeamScoreByTeamIdxParams);
+    }
+
+    // 팀 점수 업데이트하기
+    public void updateTeamScore(int homeIdx, int homeScore) {
+        String updateTeamScoreQuery = "update TeamInfo set teamScore=? where teamIdx=?";
+        Object [] updateTeamScoreParams = new Object[] {homeScore, homeIdx};
+        this.jdbcTemplate.update(updateTeamScoreQuery, updateTeamScoreParams);
+    }
+    
+    // 팀 매칭 신청 목록 조회하기
+    public List<GetApplyTeamRes> getApplyTeamRes(int teamScheduleIdx) {
+        String getApplyTeamResQuery = "select T.teamIdx, T.name, T.town, T.teamScore, T.teamProfileImgUrl, T.introduce, MA.status\n" +
+                "from MatchApply MA\n" +
+                "join MatchPost MP on MA.matchPostIdx = MP.matchPostIdx\n" +
+                "join User U on U.userIdx = MA.userIdx\n" +
+                "join Teaminfo T on U.teamIdx = T.teamIdx\n" +
+                "where MP.teamScheduleIdx=? and MP.type='TEAM'";
+        return this.jdbcTemplate.query(getApplyTeamResQuery, (rs, rowNum) -> new GetApplyTeamRes(
+                rs.getInt("teamIdx"),
+                rs.getString("name"),
+                rs.getString("town"),
+                rs.getInt("teamScore"),
+                rs.getString("teamProfileImgUrl"),
+                rs.getString("introduce"),
+                rs.getString("status")
+        ), teamScheduleIdx);
+    }
+
+    // teamSchedule을 만든 userIdx 찾기
+    public int selectUserIdxByTeamScheduleIdx(int teamScheduleIdx) {
+        String selectUserIdxByTeamScheduleIdxQuery = "select U.userIdx\n" +
+                "from teamSchedule T\n" +
+                "join User U on U.teamIdx = T.homeIdx\n" +
+                "where teamScheduleIdx=? and U.isLeader = 'T'";
+        int selectUserIdxByTeamScheduleIdxParams = teamScheduleIdx;
+        return this.jdbcTemplate.queryForObject(selectUserIdxByTeamScheduleIdxQuery, int.class, selectUserIdxByTeamScheduleIdxParams);
+    }
+
+    // 유저가 존재하는지 확인하기
+    public int checkUserExist(int userIdx) {
+        String checkUserExistQuery = "select exists(select email from User where userIdx = ?)";
+        int checkUserExistParams = userIdx;
+        return this.jdbcTemplate.queryForObject(checkUserExistQuery, int.class, checkUserExistParams);
+    }
+
+    // 팀 매칭 글 조회하기
+    public List<GetTeamMatchPostRes> getTeamMatchPosts(int userIdx, String town, String startTime, String endTime) {
+        String getTeamMatchPostsQuery = "select TS.teamScheduleIdx as teamScheduleIdx, \n" +
+                "if(MP.userIdx=?, TRUE, FALSE) as isMyPost,\n" +
+                "TI.name as homeTeamName,\n" +
+                "TS.address as address,\n" +
+                "TS.startTime as startTime,\n" +
+                "TS.endTime as endTime,\n" +
+                "TS.headCnt as headCnt,\n" +
+                "MP.contents as contents,\n" +
+                "MA.status as status\n" +
+                "from MatchPost MP\n" +
+                "join TeamSchedule TS on MP.teamScheduleIdx = TS.teamScheduleIdx\n" +
+                "join TeamInfo TI on TS.homeIdx = TI.teamIdx\n" +
+                "left join MatchApply MA on MA.matchPostIdx = MP.matchPostIdx\n" +
+                "where type='TEAM' and startTime >= ? and endTime <= ? and locate(?, address)";
+        return this.jdbcTemplate.query(getTeamMatchPostsQuery, (rs, rowNum) -> new GetTeamMatchPostRes(
+                rs.getInt("teamScheduleIdx"),
+                rs.getBoolean("isMyPost"),
+                rs.getString("homeTeamName"),
+                rs.getString("address"),
+                rs.getString("startTime"),
+                rs.getString("endTime"),
+                rs.getInt("headCnt"),
+                rs.getString("contents"),
+                rs.getString("status")
+        ), userIdx, startTime, endTime, town);
+    }
+    
     // matchApply가 존재하는지 확인하기
     public int existMatchApplyIdx(int matchApplyIdx) {
         String existMatchApplyIdxQuery = "select count(*) from MatchApply where matchApplyIdx=?";
@@ -204,5 +328,12 @@ public class TeamMatchDao {
                 "where teamScheduleIdx=?";
         int acceptTeamMatchApplyParams4 = teamScheduleIdx;
         this.jdbcTemplate.update(acceptTeamMatchApplyQuery4, acceptTeamMatchApplyParams4);
+    }
+
+    // 팀 매칭 신청 거절하기
+    public void rejectTeamMatchApply(int matchApplyIdx) {
+        String rejectTeamMatchApplyQuery = "update MatchApply set status='DENIED' where matchApplyIdx=?";
+        int rejectTeamMatchApplyParams = matchApplyIdx;
+        this.jdbcTemplate.update(rejectTeamMatchApplyQuery, rejectTeamMatchApplyParams);
     }
 }
