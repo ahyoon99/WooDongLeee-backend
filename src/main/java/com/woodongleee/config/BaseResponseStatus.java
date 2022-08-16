@@ -39,6 +39,7 @@ public enum BaseResponseStatus {
     MATCH_APPLY_PERIOD_ERROR(false, 3040, "용병/팀 모집 기간이 아닙니다."),
     MATCH_CREATE_PERIOD_ERROR(false, 3041, "용병/팀  모집글/매칭글 작성,수정,삭제 기간이 지났습니다."),
     MATCH_APPLY_VOTE_PERIOD_ERROR(false, 3042, "참가 신청 투표 기한이 지났습니다."),
+    MATCH_FULLY_ACCEPTED(false, 3043, "현재 모집 완료된 상태입니다."),
     ACCEPT_NOT_AVAILABLE(false, 3043, "해당 요청을 승인 할 수 없습니다."),
     DECLINE_NOT_AVAILABLE(false, 3044, "해당 요청을 거절 할 수 없습니다."),
     CANCEL_NOT_AVAILABLE(false, 3045, "해당 요청을 취소 할 수 없습니다."),
