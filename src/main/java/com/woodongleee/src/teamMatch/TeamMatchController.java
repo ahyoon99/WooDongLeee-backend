@@ -160,7 +160,7 @@ public class TeamMatchController {
             return new BaseResponse<>(exception.getStatus());
         }
     }
-
+    
     @ResponseBody
     @PatchMapping("/apply/{matchApplyIdx}/reject")
     public BaseResponse<String> rejectTeamMatchApply(@PathVariable int matchApplyIdx){
@@ -175,6 +175,18 @@ public class TeamMatchController {
             teamMatchService.rejectTeamMatchApply(userIdxByJwt, matchApplyIdx);
             String result = "팀 매칭 신청 거절을 성공하였습니다.";
             return new BaseResponse<>(result);
+        } catch (BaseException exception) {
+            return new BaseResponse<>(exception.getStatus());
+        }
+    }
+    
+    @ResponseBody
+    @GetMapping("")
+    public BaseResponse<List<GetTeamMatchPostRes>> getTeamMatchPosts(@RequestParam String town, @RequestParam String startTime, @RequestParam String endTime) {
+        try {
+            int userIdxByJwt = jwtService.getUserIdx();
+            List<GetTeamMatchPostRes> getTeamMatchPostResList = teamMatchProvider.getTeamMatchPosts(userIdxByJwt, town, startTime, endTime);
+            return new BaseResponse<>(getTeamMatchPostResList);
         } catch (BaseException exception) {
             return new BaseResponse<>(exception.getStatus());
         }

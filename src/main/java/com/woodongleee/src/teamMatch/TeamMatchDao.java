@@ -1,9 +1,6 @@
 package com.woodongleee.src.teamMatch;
 
-import com.woodongleee.src.teamMatch.model.GetApplyTeamRes;
-import com.woodongleee.src.teamMatch.model.ModifyTeamMatchPostsReq;
-import com.woodongleee.src.teamMatch.model.PostGameResultReq;
-import com.woodongleee.src.teamMatch.model.PostTeamMatchPostsReq;
+import com.woodongleee.src.teamMatch.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -224,6 +221,42 @@ public class TeamMatchDao {
                 "where teamScheduleIdx=? and U.isLeader = 'T'";
         int selectUserIdxByTeamScheduleIdxParams = teamScheduleIdx;
         return this.jdbcTemplate.queryForObject(selectUserIdxByTeamScheduleIdxQuery, int.class, selectUserIdxByTeamScheduleIdxParams);
+    }
+
+    // 유저가 존재하는지 확인하기
+    public int checkUserExist(int userIdx) {
+        String checkUserExistQuery = "select exists(select email from User where userIdx = ?)";
+        int checkUserExistParams = userIdx;
+        return this.jdbcTemplate.queryForObject(checkUserExistQuery, int.class, checkUserExistParams);
+    }
+
+    // 팀 매칭 글 조회하기
+    public List<GetTeamMatchPostRes> getTeamMatchPosts(int userIdx, String town, String startTime, String endTime) {
+        String getTeamMatchPostsQuery = "select TS.teamScheduleIdx as teamScheduleIdx, \n" +
+                "if(MP.userIdx=?, TRUE, FALSE) as isMyPost,\n" +
+                "TI.name as homeTeamName,\n" +
+                "TS.address as address,\n" +
+                "TS.startTime as startTime,\n" +
+                "TS.endTime as endTime,\n" +
+                "TS.headCnt as headCnt,\n" +
+                "MP.contents as contents,\n" +
+                "MA.status as status\n" +
+                "from MatchPost MP\n" +
+                "join TeamSchedule TS on MP.teamScheduleIdx = TS.teamScheduleIdx\n" +
+                "join TeamInfo TI on TS.homeIdx = TI.teamIdx\n" +
+                "left join MatchApply MA on MA.matchPostIdx = MP.matchPostIdx\n" +
+                "where type='TEAM' and startTime >= ? and endTime <= ? and locate(?, address)";
+        return this.jdbcTemplate.query(getTeamMatchPostsQuery, (rs, rowNum) -> new GetTeamMatchPostRes(
+                rs.getInt("teamScheduleIdx"),
+                rs.getBoolean("isMyPost"),
+                rs.getString("homeTeamName"),
+                rs.getString("address"),
+                rs.getString("startTime"),
+                rs.getString("endTime"),
+                rs.getInt("headCnt"),
+                rs.getString("contents"),
+                rs.getString("status")
+        ), userIdx, startTime, endTime, town);
     }
 
     // matchApply가 존재하는지 확인하기
