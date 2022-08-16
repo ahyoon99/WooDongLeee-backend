@@ -191,5 +191,24 @@ public class TeamMatchController {
             return new BaseResponse<>(exception.getStatus());
         }
     }
+    
+    @ResponseBody
+    @PatchMapping("/apply/{matchApplyIdx}/accept")
+    public BaseResponse<String> acceptTeamMatchApply(@PathVariable int matchApplyIdx){
+        try {
+            // matchApplyIdx를 이용하여 home팀의 leaderIdx 가져오기
+            int userIdx = teamMatchProvider.selectHomeLeaderIdxByMatchApplyIdx(matchApplyIdx);
+
+            int userIdxByJwt = jwtService.getUserIdx();
+            if(userIdx != userIdxByJwt){
+                return new BaseResponse<>(BaseResponseStatus.INVALID_JWT);
+            }
+            teamMatchService.acceptTeamMatchApply(userIdxByJwt, matchApplyIdx);
+            String result = "팀 매칭 신청 승인을 성공하였습니다.";
+            return new BaseResponse<>(result);
+        } catch (BaseException exception) {
+            return new BaseResponse<>(exception.getStatus());
+        }
+    }
 }
 

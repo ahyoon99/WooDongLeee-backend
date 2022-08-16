@@ -258,7 +258,7 @@ public class TeamMatchDao {
                 rs.getString("status")
         ), userIdx, startTime, endTime, town);
     }
-
+    
     // matchApply가 존재하는지 확인하기
     public int existMatchApplyIdx(int matchApplyIdx) {
         String existMatchApplyIdxQuery = "select count(*) from MatchApply where matchApplyIdx=?";

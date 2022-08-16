@@ -298,7 +298,7 @@ public class TeamMatchService {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
     }
-
+    
     public BaseResponse<PostGameResultRes> postGameResult(PostGameResultReq postGameResultReq) throws BaseException{
         try{
             // teamScheduleIdx에서 homeIdx(팀 idx), awayIdx(팀 idx) 가져오기
@@ -393,6 +393,54 @@ public class TeamMatchService {
 
             // <<< 위의 조건들 모두 만족 시, 팀 매칭 신청 거절 >>
             teamMatchDao.rejectTeamMatchApply(matchApplyIdx);
+        } catch (BaseException e) {
+            throw e;
+        } catch (Exception exception) {
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
+    
+    // 팀 매칭 신청 승인하기
+    public void acceptTeamMatchApply(int userIdxByJwt, int matchApplyIdx) throws BaseException{
+        try{
+            // 0. 탈퇴한 유저입니다.
+            if (teamMatchDao.checkUserStatus(userIdxByJwt).equals("INACTIVE")) {   // 사용자가 탈퇴한 회원인 경우
+                throw new BaseException(BaseResponseStatus.LEAVED_USER);
+            }
+
+            // 1. 팀 매칭 신청은 리더만 가능합니다.
+            if (teamMatchDao.isLeader(userIdxByJwt).equals("F")) {  // 사용자가 리더가 아닌 경우
+                throw new BaseException(BaseResponseStatus.UNAUTHORIZED_ACCESS);
+            }
+
+            // 2. 존재하지 않는 팀 매칭 신청 내역입니다.
+            if (teamMatchDao.existMatchApplyIdx(matchApplyIdx) == 0) {    // 팀 매칭 신청이 존재하지 않는 경우
+                throw new BaseException(BaseResponseStatus.MATCH_APPLY_DOES_NOT_EXIST);
+            }
+
+            // 4. 이미 승인한 신청입니다.
+            if(teamMatchDao.checkMatchApplyIdxStatus(matchApplyIdx).equals("ACCEPTED")){
+                throw new BaseException(BaseResponseStatus.MATCH_APPLY_ALREADY_ACCEPTED);
+            }
+
+            // 3. 팀 매칭이 이미 완료되었습니다.
+            int matchPostIdx = teamMatchDao.selectMatchPostIdxByMatchApplyIdx(matchApplyIdx);
+            if(teamMatchDao.checkApplyStatus(matchPostIdx)>=1){ // 이미 팀 매칭이 완료된 경우
+                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE);
+            }
+
+            // <<< 위의 조건들 모두 만족 시, 팀 매칭 신청 승인 >>
+            // 팀 일정 Idx 가져오기
+            int teamScheduleIdx = teamMatchDao.selectScheduleIdxByMatchPostIdx(matchPostIdx);
+
+            // MatchApply 작성한 userIdx(away팀의 리더 Idx) 가져오기
+            int awayLeaderIdx = teamMatchDao.selectAwayLeaderIdxByMatchApplyIdx(matchApplyIdx);
+
+            // away팀의 Idx 가져오기
+            int awayIdx = teamMatchDao.selectTeamIdxByUserIdx(awayLeaderIdx);
+
+            // 팀 매칭 신청 승인하기
+            teamMatchDao.acceptTeamMatchApply(matchApplyIdx, matchPostIdx, teamScheduleIdx, awayIdx);
         } catch (BaseException e) {
             throw e;
         } catch (Exception exception) {
