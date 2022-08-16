@@ -53,12 +53,19 @@ public class UserProvider {
 
     //이메일 인증 코드 인증
     public boolean verify(String email, String code) throws BaseException {
-        VerifyDomain verifyDomain = userDao.verify(email);
-        if(verifyDomain.getExpirationTime().after(new Timestamp(System.currentTimeMillis()))){
-            return verifyDomain.getCode().equals(code);
-        }
-        else{
-            throw new BaseException(EMAIL_VERIFY_REQUEST_EXPIRED);
+
+        try{
+            VerifyDomain verifyDomain = userDao.verify(email);
+            if(verifyDomain.getExpirationTime().after(new Timestamp(System.currentTimeMillis()))){
+                return verifyDomain.getCode().equals(code);
+            }
+            else{
+                throw new BaseException(EMAIL_VERIFY_REQUEST_EXPIRED);
+            }
+        } catch (EmptyResultDataAccessException e){
+            throw new BaseException(EMAIL_VERIFY_REQUEST_DOES_NOT_EXIST);
+        } catch (BaseException e){
+            throw e;
         }
     }
 
