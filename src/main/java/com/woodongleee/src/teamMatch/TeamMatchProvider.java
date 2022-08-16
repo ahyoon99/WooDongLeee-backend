@@ -97,7 +97,16 @@ public class TeamMatchProvider {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
     }
-
+    
+    public int selectHomeLeaderIdxByMatchApplyIdx(int matchApplyIdx) throws BaseException{
+        // 팀 신청 내역이 존재하지 않습니다.
+        if(teamMatchDao.existMatchApplyIdx(matchApplyIdx)==0){
+            throw new BaseException(BaseResponseStatus.MATCH_APPLY_DOES_NOT_EXIST);
+        }
+        int userIdx = teamMatchDao.selectHomeLeaderIdxByMatchApplyIdx(matchApplyIdx);
+        return userIdx;
+    }
+    
     // 팀 매칭글 조회하기
     public List<GetTeamMatchPostRes> getTeamMatchPosts(int userIdxByJwt, String town, String startTime, String endTime) throws BaseException {
         try{

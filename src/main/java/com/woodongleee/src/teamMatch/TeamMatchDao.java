@@ -258,4 +258,82 @@ public class TeamMatchDao {
                 rs.getString("status")
         ), userIdx, startTime, endTime, town);
     }
+
+    // matchApply가 존재하는지 확인하기
+    public int existMatchApplyIdx(int matchApplyIdx) {
+        String existMatchApplyIdxQuery = "select count(*) from MatchApply where matchApplyIdx=?";
+        int existMatchApplyIdxParams = matchApplyIdx;
+        return this.jdbcTemplate.queryForObject(existMatchApplyIdxQuery, int.class, existMatchApplyIdxParams);
+    }
+
+    // matchApply에서 home팀의 leaderIdx 가져오기
+    public int selectHomeLeaderIdxByMatchApplyIdx(int matchApplyIdx) {
+        String selectUserIdxByMatchApplyIdxQuery = "select MP.userIdx\n" +
+                "from MatchApply MA\n" +
+                "join MatchPost MP on MA.matchPostIdx = MP.matchPostIdx\n" +
+                "where matchApplyIdx=?";
+        int selectUserIdxByMatchApplyIdxParams = matchApplyIdx;
+        return this.jdbcTemplate.queryForObject(selectUserIdxByMatchApplyIdxQuery, int.class, selectUserIdxByMatchApplyIdxParams);
+    }
+
+    // matchApply가 이미 승인된 신청인지 확인하기
+    public String checkMatchApplyIdxStatus(int matchApplyIdx) {
+        String checkAlreadyMatchApplyIdxQuery = "select status from MatchApply where matchApplyIdx = ?";
+        int checkAlreadyMatchApplyIdxParams = matchApplyIdx;
+        return this.jdbcTemplate.queryForObject(checkAlreadyMatchApplyIdxQuery, String.class, checkAlreadyMatchApplyIdxParams);
+    }
+
+    // MatchApply에서 MatchPostIdx 찾기
+    public int selectMatchPostIdxByMatchApplyIdx(int matchApplyIdx) {
+        String selectMatchPostIdxByMatchApplyIdxQuery = "select matchPostIdx from MatchApply where matchApplyIdx=?";
+        int selectMatchPostIdxByMatchApplyIdxParams = matchApplyIdx;
+        return this.jdbcTemplate.queryForObject(selectMatchPostIdxByMatchApplyIdxQuery, int.class, selectMatchPostIdxByMatchApplyIdxParams);
+    }
+
+    // MatchApply를 작성한 userIdx 가져오기
+    public int selectAwayLeaderIdxByMatchApplyIdx(int matchApplyIdx) {
+        String selectAwayLeaderIdxByMatchApplyIdxQuery = "select userIdx from MatchApply where matchApplyIdx=?";
+        int selectAwayLeaderIdxByMatchApplyIdxParams = matchApplyIdx;
+        return this.jdbcTemplate.queryForObject(selectAwayLeaderIdxByMatchApplyIdxQuery, int.class, selectAwayLeaderIdxByMatchApplyIdxParams);
+    }
+
+    // userIdx로 teamIdx 구하기
+    public int selectTeamIdxByUserIdx(int userIdx) {
+        String selectTeamIdxByUserIdxQuery = "select teamIdx from User where userIdx=?";
+        int selectTeamIdxByUserIdxParams = userIdx;
+        return this.jdbcTemplate.queryForObject(selectTeamIdxByUserIdxQuery, int.class, selectTeamIdxByUserIdxParams);
+    }
+
+    // 팀 매칭 신청 승인하기
+    public void acceptTeamMatchApply(int matchApplyIdx, int matchPostIdx, int teamScheduleIdx, int awayIdx) {
+        // 1. 승인한 MatchApply의 status를 ACCEPTED로 바꿔주기
+        String acceptTeamMatchApplyQuery1 = "update MatchApply set status='ACCEPTED' where matchApplyIdx=?";
+        int acceptTeamMatchApplyParams1 = matchApplyIdx;
+        this.jdbcTemplate.update(acceptTeamMatchApplyQuery1, acceptTeamMatchApplyParams1);
+
+        // 2. 해당 MatchPost에 대한 나머지 MatchApply의 status를 자동으로 DENIED 해주기
+        String acceptTeamMatchApplyQuery2 = "update MatchApply set status='DENIED' where matchPostIdx=? and matchApplyIdx!=?";
+        Object [] acceptTeamMatchApplyParams2 = new Object[] {matchPostIdx, matchApplyIdx};
+        this.jdbcTemplate.update(acceptTeamMatchApplyQuery2, acceptTeamMatchApplyParams2);
+
+        // 3. home팀의 TeamSchedule의 awayIdx 수정해주기
+        String acceptTeamMatchApplyQuery3 = "update TeamSchedule set awayIdx=? where teamScheduleIdx=?";
+        Object [] acceptTeamMatchApplyParams3 = new Object[] {awayIdx, teamScheduleIdx};
+        this.jdbcTemplate.update(acceptTeamMatchApplyQuery3, acceptTeamMatchApplyParams3);
+
+        // 4. away팀의 TeamSchedule 추가해주기
+        String acceptTeamMatchApplyQuery4 = "insert into TeamSchedule(homeIdx, address, awayIdx, startTime, endTime, date, headCnt)\n" +
+                "select awayIdx, address, homeIdx, startTime, endTime, date, headCnt \n" +
+                "from TeamSchedule\n" +
+                "where teamScheduleIdx=?";
+        int acceptTeamMatchApplyParams4 = teamScheduleIdx;
+        this.jdbcTemplate.update(acceptTeamMatchApplyQuery4, acceptTeamMatchApplyParams4);
+    }
+
+    // 팀 매칭 신청 거절하기
+    public void rejectTeamMatchApply(int matchApplyIdx) {
+        String rejectTeamMatchApplyQuery = "update MatchApply set status='DENIED' where matchApplyIdx=?";
+        int rejectTeamMatchApplyParams = matchApplyIdx;
+        this.jdbcTemplate.update(rejectTeamMatchApplyQuery, rejectTeamMatchApplyParams);
+    }
 }

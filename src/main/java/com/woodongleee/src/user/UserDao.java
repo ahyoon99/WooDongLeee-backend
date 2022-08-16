@@ -41,7 +41,7 @@ public class UserDao {
     }
 
     public void createCode(String email, String code) {
-        String createCodeQuery = "insert into emailcode (email, code, expirationTime) VALUES (?,?,DATE_ADD(NOW(), INTERVAL 5 MINUTE))";
+        String createCodeQuery = "insert into EmailCode (email, code, expirationTime) VALUES (?,?,DATE_ADD(NOW(), INTERVAL 5 MINUTE))";
         Object[] createCodeParams = new Object[]{email, code};
         this.jdbcTemplate.update(createCodeQuery, createCodeParams);
     }
