@@ -38,7 +38,7 @@ public class Teams_2Service {
             }
 
             if(teams2Dao.isLeader(userIdx) != 1){
-                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 리더가 아닌 경우
+                throw new BaseException(UNAUTHORIZED_ACCESS); // 리더가 아닌 경우
             }
 
             if(teams2Dao.checkTeamIdxExist(teamIdx) != 1){
@@ -46,7 +46,7 @@ public class Teams_2Service {
             }
 
             if(teams2Dao.isOurTeam(userIdx, teamIdx) != 1){
-                throw new BaseException(ACCEPT_NOT_AVAILABLE); // teamIdx와 userIdx가 매치되지 않는 경우
+                throw new BaseException(NOT_TEAMMATE); // teamIdx와 userIdx가 매치되지 않는 경우
             }
             return teams2Dao.changeTeamRecruit(teamIdx);
         } catch (BaseException e) {
@@ -66,7 +66,7 @@ public class Teams_2Service {
             }
 
             if(teams2Dao.isLeader(userIdx) != 1){
-                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 리더가 아닌 경우
+                throw new BaseException(UNAUTHORIZED_ACCESS); // 리더가 아닌 경우
             }
 
             if(teams2Dao.checkTeamIdxExist(teamIdx) != 1){
@@ -74,11 +74,11 @@ public class Teams_2Service {
             }
 
             if(teams2Dao.isOurTeam(userIdx, teamIdx) != 1){
-                throw new BaseException(ACCEPT_NOT_AVAILABLE); // teamIdx와 userIdx가 매치되지 않는 경우
+                throw new BaseException(NOT_TEAMMATE); // teamIdx와 userIdx가 매치되지 않는 경우
             }
 
             if(teams2Dao.checkTimeOfSchedule(addTeamScheduleReq.getStartTime(), addTeamScheduleReq.getEndTime()) == 1){
-                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 시간이 안 맞는 경우
+                throw new BaseException(SCHEDULE_ALREADY_EXIST); // 시간이 안 맞는 경우
             }
 
             teams2Dao.addTeamSchedule(addTeamScheduleReq, teamIdx);
@@ -98,7 +98,7 @@ public class Teams_2Service {
                 throw new BaseException(LEAVED_USER);
             }
             if(teams2Dao.isLeader(userIdx) != 1){
-                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 리더가 아닌 경우
+                throw new BaseException(UNAUTHORIZED_ACCESS); // 리더가 아닌 경우
             }
 
             if(teams2Dao.checkTeamIdxExist(teamIdx) != 1){
@@ -106,7 +106,7 @@ public class Teams_2Service {
             }
 
             if(teams2Dao.isOurTeam(userIdx, teamIdx) != 1){
-                throw new BaseException(ACCEPT_NOT_AVAILABLE); // teamIdx와 userIdx가 매치되지 않는 경우
+                throw new BaseException(NOT_TEAMMATE); // teamIdx와 userIdx가 매치되지 않는 경우
             }
 
             teams2Dao.disbandTeam(teamIdx);
@@ -137,7 +137,7 @@ public class Teams_2Service {
             // 유저 탈퇴 여부 확인
 
             if(teams2Dao.isLeader(leaderIdx) != 1){
-                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 리더가 아닌 경우
+                throw new BaseException(UNAUTHORIZED_ACCESS); // 리더가 아닌 경우
             }
 
             int teamIdx = teams2Dao.getTeamIdx(leaderIdx); // 리더의 팀idx
@@ -147,7 +147,7 @@ public class Teams_2Service {
             }
 
             if(teams2Dao.isOurTeam(userIdx, teamIdx) != 1){
-                throw new BaseException(LEAVED_USER); // teamIdx와 userIdx가 매치되지 않는 경우
+                throw new BaseException(NOT_TEAMMATE); // teamIdx와 userIdx가 매치되지 않는 경우
             }
 
             teams2Dao.dropUser(userIdx);
@@ -167,7 +167,7 @@ public class Teams_2Service {
                 throw new BaseException(LEAVED_USER);
             }
             if(teams2Dao.isLeader(userIdx) != 1){
-                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 리더가 아닌 경우
+                throw new BaseException(UNAUTHORIZED_ACCESS); // 리더가 아닌 경우
             }
 
             String status = teams2Dao.getTeamApplyStatus(teamApplyIdx);
@@ -192,7 +192,7 @@ public class Teams_2Service {
                 throw new BaseException(LEAVED_USER);
             }
             if(teams2Dao.isLeader(userIdx) != 1){
-                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 리더가 아닌 경우
+                throw new BaseException(UNAUTHORIZED_ACCESS); // 리더가 아닌 경우
             }
 
             String status = teams2Dao.getTeamApplyStatus(teamApplyIdx);

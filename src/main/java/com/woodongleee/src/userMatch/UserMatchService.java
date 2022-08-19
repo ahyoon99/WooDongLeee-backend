@@ -37,7 +37,7 @@ public class UserMatchService {
                 throw new BaseException(LEAVED_USER);
             }
             if (userMatchDao.checkMatchPostExist(matchPostIdx) != 1) {
-                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // 존재하지 않는 matchPostIdx
+                throw new BaseException(MATCHING_DOES_NOT_EXIST); // 존재하지 않는 matchPostIdx
             }
 
             CheckApplyingPossibilityRes checkApplyingPossibilityRes = userMatchDao.checkApplyingPossibility(userIdx, matchPostIdx);
@@ -48,15 +48,15 @@ public class UserMatchService {
             int teamIdx = checkApplyingPossibilityRes.getTeamIdx();
 
             if (userMatchDao.getTeamIdx(userIdx) == teamIdx) {
-                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // 해당 경기의 참가 팀 소속입니다.
+                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 해당 경기의 참가 팀 소속입니다.
             }
 
             if (status == 1) {
-                throw new BaseException(BaseResponseStatus.MATCH_ALREADY_EXIST); // 이미 신청했습니다.
+                throw new BaseException(MATCH_ALREADY_EXIST); // 이미 신청했습니다.
             }
 
             if ((joinCnt + userMatchCnt) >= headCnt) {
-                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // 용병 모집이 완료된 경기입니다.
+                throw new BaseException(MATCH_FULLY_ACCEPTED); // 용병 모집이 완료된 경기입니다.
             }
 
 
@@ -69,7 +69,7 @@ public class UserMatchService {
             diff = (((diff / 1000) / 60) / 60);
 
             if (diff <= 2) {
-                throw new BaseException(BaseResponseStatus.MATCH_APPLY_PERIOD_ERROR); // 용병 모집 기한이 지난 경기입니다.
+                throw new BaseException(MATCH_APPLY_PERIOD_ERROR); // 용병 모집 기한이 지난 경기입니다.
             }
 
 
@@ -77,7 +77,7 @@ public class UserMatchService {
         } catch (BaseException e) {
             throw e;
         } catch (Exception e) {
-            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+            throw new BaseException(DATABASE_ERROR);
         }
     }
 
@@ -91,7 +91,7 @@ public class UserMatchService {
             }
 
             if (userMatchDao.checkMatchPostExist(matchPostIdx) != 1) {
-                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 존재하지 않는 matchPostIdx
+                throw new BaseException(MATCHING_DOES_NOT_EXIST); // 존재하지 않는 matchPostIdx
             }
 
             if (userMatchDao.checkMatchApplyExist(userIdx, matchPostIdx) != 1) {
@@ -136,16 +136,16 @@ public class UserMatchService {
             }
 
             if (userMatchDao.isLeader(userIdx) != 1) {
-                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // 리더가 아닙니다.
+                throw new BaseException(UNAUTHORIZED_ACCESS); // 리더가 아닙니다.
             }
 
             CheckCreateUserMatchPostPossibilityRes createUserMatchPostPossibilityRes = userMatchDao.checkCreateMatchPostPossibility(userIdx, teamScheduleIdx);
             if (createUserMatchPostPossibilityRes.getStatus() == 1) {
-                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // 이미 용병 모집글이 작성되었습니다.
+                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 이미 용병 모집글이 작성되었습니다.
             }
 
             if (userMatchDao.isOurMatch(userIdx, teamScheduleIdx) != 1) {
-                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // teamScheduleIdx가 다른 팀의 것입니다.
+                throw new BaseException(NOT_TEAMMATE); // teamScheduleIdx가 다른 팀의 것입니다.
             }
 
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -180,17 +180,17 @@ public class UserMatchService {
             }
 
             if (userMatchDao.isLeader(userIdx) != 1) {
-                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // 리더가 아닙니다.
+                throw new BaseException(UNAUTHORIZED_ACCESS); // 리더가 아닙니다.
             }
 
             // 모집글 수정 가능 여부 확인은, 생성가능 여부 확인 방식과 다르지 않아 재사용
             CheckCreateUserMatchPostPossibilityRes createUserMatchPostPossibilityRes = userMatchDao.checkCreateMatchPostPossibility(userIdx, teamScheduleIdx);
             if (createUserMatchPostPossibilityRes.getStatus() != 1) {
-                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // 용병 모집글이 작성되지 않았습니다.
+                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 용병 모집글이 작성되지 않았습니다.
             }
 
             if (userMatchDao.isOurMatch(userIdx, teamScheduleIdx) != 1) {
-                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // teamScheduleIdx가 다른 팀의 것입니다.
+                throw new BaseException(NOT_TEAMMATE); // teamScheduleIdx가 다른 팀의 것입니다.
             }
 
             //우리팀 경기가 아닙니다 추가.. -> 잘못된 teamScheduleIdx
@@ -203,7 +203,7 @@ public class UserMatchService {
             diff = (((diff / 1000) / 60) / 60);
 
             if (diff <= 2) {
-                throw new BaseException(BaseResponseStatus.MATCH_CREATE_PERIOD_ERROR); // 용병 모집글 작성 기한이 지났습니다.
+                throw new BaseException(MATCH_CREATE_PERIOD_ERROR); // 용병 모집글 작성 기한이 지났습니다.
             }
 
             int matchPostIdx = userMatchDao.modifyUserMatchPost(userIdx, teamScheduleIdx, contents);
@@ -211,7 +211,7 @@ public class UserMatchService {
         } catch (BaseException e) {
             throw e;
         } catch (Exception e) {
-            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+            throw new BaseException(DATABASE_ERROR);
         }
     }
 
@@ -225,17 +225,17 @@ public class UserMatchService {
             }
 
             if (userMatchDao.isLeader(userIdx) != 1) {
-                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // 리더가 아닙니다.
+                throw new BaseException(UNAUTHORIZED_ACCESS); // 리더가 아닙니다.
             }
 
             // 모집글 삭제 가능 여부 확인은, 생성가능 여부 확인 방식과 다르지 않아 재사용
             CheckCreateUserMatchPostPossibilityRes createUserMatchPostPossibilityRes = userMatchDao.checkCreateMatchPostPossibility(userIdx, teamScheduleIdx);
             if (createUserMatchPostPossibilityRes.getStatus() != 1) {
-                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // 용병 모집글이 작성되지 않았습니다.
+                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 용병 모집글이 작성되지 않았습니다.
             }
 
             if (userMatchDao.isOurMatch(userIdx, teamScheduleIdx) != 1) {
-                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // teamScheduleIdx가 다른 팀의 것입니다.
+                throw new BaseException(NOT_TEAMMATE); // teamScheduleIdx가 다른 팀의 것입니다.
             }
 
             userMatchDao.deleteUserMatchPost(userIdx, teamScheduleIdx);
@@ -259,11 +259,11 @@ public class UserMatchService {
             }
 
             if (userMatchDao.isLeader(userIdx) != 1) {
-                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 리더가 아닙니다.
+                throw new BaseException(UNAUTHORIZED_ACCESS); // 리더가 아닙니다.
             }
 
             if (userMatchDao.existsMatchApply(matchApplyIdx) != 1){
-                throw new BaseException(ACCEPT_NOT_AVAILABLE); // matchApplyIdx가 잘못된 경우
+                throw new BaseException(MATCHING_DOES_NOT_EXIST); // matchApplyIdx가 잘못된 경우
             }
 
             CheckUserMatchApplyPossibilityRes checkUserMatchApplyPossibilityRes = userMatchDao.checkUserMatchApplyPossibility(userIdx, matchApplyIdx);
@@ -273,11 +273,11 @@ public class UserMatchService {
             }
 
             if(checkUserMatchApplyPossibilityRes.getCount() <= 0){
-                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 신청 인원 마감된 경우
+                throw new BaseException(MATCH_FULLY_ACCEPTED); // 신청 인원 마감된 경우
             }
 
             if(checkUserMatchApplyPossibilityRes.getStatus() != 1){
-                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 우리팀 경기에 대한 신청이 아닌 경우
+                throw new BaseException(NOT_TEAMMATE); // 우리팀 경기에 대한 신청이 아닌 경우
             }
 
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -310,11 +310,11 @@ public class UserMatchService {
             }
 
             if (userMatchDao.isLeader(userIdx) != 1) {
-                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 리더가 아닙니다.
+                throw new BaseException(UNAUTHORIZED_ACCESS); // 리더가 아닙니다.
             }
 
             if (userMatchDao.existsMatchApply(matchApplyIdx) != 1){
-                throw new BaseException(ACCEPT_NOT_AVAILABLE); // matchApplyIdx가 잘못된 경우
+                throw new BaseException(MATCHING_DOES_NOT_EXIST); // matchApplyIdx가 잘못된 경우
             }
 
             CheckUserMatchApplyPossibilityRes checkUserMatchApplyPossibilityRes = userMatchDao.checkUserMatchApplyPossibility(userIdx, matchApplyIdx);
@@ -324,7 +324,7 @@ public class UserMatchService {
             }
 
             if(checkUserMatchApplyPossibilityRes.getStatus() != 1){
-                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 우리팀 경기에 대한 신청이 아닌 경우
+                throw new BaseException(NOT_TEAMMATE); // 우리팀 경기에 대한 신청이 아닌 경우
             }
 
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

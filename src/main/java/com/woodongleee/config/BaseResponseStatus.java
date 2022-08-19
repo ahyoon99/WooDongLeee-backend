@@ -44,6 +44,7 @@ public enum BaseResponseStatus {
     CANCEL_NOT_AVAILABLE(false, 3045, "해당 요청을 취소 할 수 없습니다."),
     EMAIL_VERIFY_REQUEST_EXPIRED(false, 3046, "인증기간이 만료되었습니다."),
     GAME_RESULT_PERIOD_ERROR(false, 3047, "경기가 아직 끝나지 않았습니다."),
+    MATCH_FULLY_ACCEPTED(false, 3048, "현재 모집 완료된 상태입니다."),
     MATCH_ALREADY_EXIST(false, 3050, "이미 용병/팀 매칭중인 경기입니다."),
     SCHEDULE_ALREADY_EXIST(false, 3051, "해당 시간에 이미 일정이 있습니다."),
     TEAM_ALREADY_EXIST(false, 3052, "이미 팀에 가입되어 있습니다"),

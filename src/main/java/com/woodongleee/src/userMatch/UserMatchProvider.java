@@ -55,11 +55,11 @@ public class UserMatchProvider {
             }
 
             if (userMatchDao.isLeader(userIdx) != 1) {
-                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // 리더가 아닙니다.
+                throw new BaseException(BaseResponseStatus.UNAUTHORIZED_ACCESS); // 리더가 아닙니다.
             }
 
             if (userMatchDao.isOurMatch(userIdx, teamScheduleIdx) != 1) {
-                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE); // teamScheduleIdx가 다른 팀의 것입니다.
+                throw new BaseException(BaseResponseStatus.NOT_TEAMMATE); // teamScheduleIdx가 다른 팀의 것입니다.
             }
 
             if(userMatchDao.existsMatchPost(teamScheduleIdx) != 1){

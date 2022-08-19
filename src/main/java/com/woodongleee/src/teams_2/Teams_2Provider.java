@@ -36,7 +36,7 @@ public class Teams_2Provider {
                 throw new BaseException(LEAVED_USER);
             }
             if(teams2Dao.isLeader(userIdx) != 1){
-                throw new BaseException(ACCEPT_NOT_AVAILABLE); // 리더가 아닌 경우
+                throw new BaseException(UNAUTHORIZED_ACCESS); // 리더가 아닌 경우
             }
 
             if(teams2Dao.checkTeamIdxExist(teamIdx) != 1){
@@ -44,7 +44,7 @@ public class Teams_2Provider {
             }
 
             if(teams2Dao.isOurTeam(userIdx, teamIdx) != 1){
-                throw new BaseException(ACCEPT_NOT_AVAILABLE); // teamIdx와 userIdx가 매치되지 않는 경우
+                throw new BaseException(NOT_TEAMMATE); // teamIdx와 userIdx가 매치되지 않는 경우
             }
 
             return teams2Dao.getTeamApplyList(teamIdx);
