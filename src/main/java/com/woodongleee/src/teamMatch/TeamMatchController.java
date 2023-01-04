@@ -33,7 +33,6 @@ public class TeamMatchController {
     @PostMapping("/{teamScheduleIdx}")
     public BaseResponse<PostTeamMatchPostsRes> createTeamMatchPosts(@PathVariable("teamScheduleIdx") int teamScheduleIdx, @RequestBody PostTeamMatchPostsReq postTeamMatchPostsReq){
         try {
-
             int userIdxByJwt = jwtService.getUserIdx();
             if(postTeamMatchPostsReq.getUserIdx() != userIdxByJwt){
                 return new BaseResponse<>(BaseResponseStatus.INVALID_JWT);
