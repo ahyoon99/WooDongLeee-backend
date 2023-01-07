@@ -22,6 +22,8 @@ public class TeamMatchController {
     private final TeamMatchProvider teamMatchProvider;
     private final TeamMatchService teamMatchService;
     private final JwtService jwtService;
+    public static final int POST_LENGTH_MAX = 500;
+    public static final int VALID_SCORE_MIN = 0;
 
     public TeamMatchController(TeamMatchProvider teamMatchProvider, TeamMatchService teamMatchService, JwtService jwtService) {
         this.teamMatchProvider = teamMatchProvider;
@@ -38,7 +40,7 @@ public class TeamMatchController {
                 return new BaseResponse<>(BaseResponseStatus.INVALID_JWT);
             }
 
-            if (postTeamMatchPostsReq.getContents().length() > 500) {     // 게시글의 길이에 대한 validation
+            if (postTeamMatchPostsReq.getContents().length() > POST_LENGTH_MAX) {     // 게시글의 길이에 대한 validation
                 return new BaseResponse<>(BaseResponseStatus.POST_POSTS_INVALID_CONTENTS);
             }
 
@@ -60,7 +62,7 @@ public class TeamMatchController {
                 return new BaseResponse<>(BaseResponseStatus.INVALID_JWT);
             }
 
-            if(modifyTeamMatchPostsReq.getContents().length()>500){     // 게시글의 길이에 대한 validation
+            if(modifyTeamMatchPostsReq.getContents().length()>POST_LENGTH_MAX){     // 게시글의 길이에 대한 validation
                 return new BaseResponse<>(BaseResponseStatus.POST_POSTS_INVALID_CONTENTS);
             }
 
@@ -120,20 +122,20 @@ public class TeamMatchController {
     public BaseResponse<PostGameResultRes> postGameResult(@PathVariable("teamScheduleIdx") int teamScheduleIdx, @RequestBody PostGameResultReq postGameResultReq){
         try {
             // teamScheduleIdx에서 homeIdx(팀 idx), awayIdx(팀 idx) 가져오기
-            int homeIdx = teamMatchProvider.selectHomeIdxByTeamScheduleIdx(teamScheduleIdx);
+            int homeTeamIdx = teamMatchProvider.selectHomeIdxByTeamScheduleIdx(teamScheduleIdx);
 
             // homeIdx를 가지는 리더 userIdx 가져오기, 결과 입력은 home팀의 주장만 가능!
-            int userIdx = teamMatchProvider.selectLeaderIdxByTeamIdx(homeIdx);
+            int leaderUserIdx = teamMatchProvider.selectLeaderIdxByTeamIdx(homeTeamIdx);
 
             int userIdxByJwt = jwtService.getUserIdx();
-            if(userIdx != userIdxByJwt){
+            if(leaderUserIdx != userIdxByJwt){
                 return new BaseResponse<>(BaseResponseStatus.INVALID_JWT);
             }
 
-            if (postGameResultReq.getAwayScore()<0) {     // 원정팀 점수에 대한 validation
+            if (postGameResultReq.getAwayScore()<VALID_SCORE_MIN) {     // 원정팀 점수에 대한 validation
                 return new BaseResponse<>(BaseResponseStatus.INVALID_SCORE_SCOPE);
             }
-            if (postGameResultReq.getHomeScore()<0) {     // 홈팀 점수에 대한 validation
+            if (postGameResultReq.getHomeScore()<VALID_SCORE_MIN) {     // 홈팀 점수에 대한 validation
                 return new BaseResponse<>(BaseResponseStatus.INVALID_SCORE_SCOPE);
             }
             BaseResponse<PostGameResultRes> postGameResultRes = teamMatchService.postGameResult(postGameResultReq);
@@ -165,10 +167,10 @@ public class TeamMatchController {
     public BaseResponse<String> rejectTeamMatchApply(@PathVariable int matchApplyIdx){
         try {
             // matchApplyIdx를 이용하여 home팀의 leaderIdx 가져오기
-            int userIdx = teamMatchProvider.selectHomeLeaderIdxByMatchApplyIdx(matchApplyIdx);
+            int leaderUserIdx = teamMatchProvider.selectHomeLeaderIdxByMatchApplyIdx(matchApplyIdx);
 
             int userIdxByJwt = jwtService.getUserIdx();
-            if(userIdx != userIdxByJwt){
+            if(leaderUserIdx != userIdxByJwt){
                 return new BaseResponse<>(BaseResponseStatus.INVALID_JWT);
             }
             teamMatchService.rejectTeamMatchApply(userIdxByJwt, matchApplyIdx);
@@ -196,10 +198,10 @@ public class TeamMatchController {
     public BaseResponse<String> acceptTeamMatchApply(@PathVariable int matchApplyIdx){
         try {
             // matchApplyIdx를 이용하여 home팀의 leaderIdx 가져오기
-            int userIdx = teamMatchProvider.selectHomeLeaderIdxByMatchApplyIdx(matchApplyIdx);
+            int leaderUserIdx = teamMatchProvider.selectHomeLeaderIdxByMatchApplyIdx(matchApplyIdx);
 
             int userIdxByJwt = jwtService.getUserIdx();
-            if(userIdx != userIdxByJwt){
+            if(leaderUserIdx != userIdxByJwt){
                 return new BaseResponse<>(BaseResponseStatus.INVALID_JWT);
             }
             teamMatchService.acceptTeamMatchApply(userIdxByJwt, matchApplyIdx);
