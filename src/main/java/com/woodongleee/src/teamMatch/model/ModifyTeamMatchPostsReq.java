@@ -20,4 +20,12 @@ public class ModifyTeamMatchPostsReq {
                 ", contents='" + contents + '\'' +
                 '}';
     }
+
+    public boolean checkUserIdxAndUserIdxByJWT(int userIdxByJwt){
+        return this.userIdx == userIdxByJwt;
+    }
+
+    public boolean checkContentsMaxLength(int POST_LENGTH_MAX){
+        return this.contents.length() > POST_LENGTH_MAX;
+    }
 }
