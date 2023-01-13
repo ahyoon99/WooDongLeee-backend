@@ -66,10 +66,10 @@ public class TeamMatchDao {
     }
 
     // 팀 매칭글 작성자 확인하기
-    public int whoWritePost(int matchPostIdx) {
-        String whoWritePostQuery = "select userIdx from MatchPost where matchPostIdx=?";
-        int whoWritePostParams = matchPostIdx;
-        return this.jdbcTemplate.queryForObject(whoWritePostQuery, int.class, whoWritePostParams);
+    public int findUserIdxByPostIdx(int matchPostIdx) {
+        String findUserIdxByPostIdxQuery = "select userIdx from MatchPost where matchPostIdx=?";
+        int findUserIdxByPostIdxParams = matchPostIdx;
+        return this.jdbcTemplate.queryForObject(findUserIdxByPostIdxQuery, int.class, findUserIdxByPostIdxParams);
     }
 
     // matchPostIdx를 사용해서 팀 매칭 글이 존재하는지 확인하기

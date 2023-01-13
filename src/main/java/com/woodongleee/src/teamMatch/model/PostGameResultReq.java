@@ -20,4 +20,13 @@ public class PostGameResultReq {
                 ", awayScore=" + awayScore +
                 '}';
     }
+
+    public boolean checkAwayScoreMinValue(int VALID_SCORE_MIN) {
+        return this.awayScore >= VALID_SCORE_MIN;
+    }
+
+    public boolean checkHomeScoreMinValue(int VALID_SCORE_MIN) {
+        return this.homeScore >= VALID_SCORE_MIN;
+    }
+
 }

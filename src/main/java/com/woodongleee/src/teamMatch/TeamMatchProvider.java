@@ -28,19 +28,49 @@ public class TeamMatchProvider {
         this.jwtService = jwtService;
     }
 
+    // 팀 매칭 글이 존재하지 않습니다.
+    public boolean existTeamMatchPostIdx(int matchPostIdx){
+        return teamMatchDao.existTeamMatchPostIdx(matchPostIdx) == DO_NOT_EXIST;
+    }
+
+    // 존재하지 않는 팀 일정(경기)입니다.
+    public boolean existTeamMatch(int teamScheduleIdx){
+        return teamMatchDao.existTeamMatch(teamScheduleIdx) == DO_NOT_EXIST;
+    }
+
+    // 존재하지 않는 팀입니다.
+    public boolean existTeamInfo(int teamIdx){
+        return teamMatchDao.existTeamInfo(teamIdx)==DO_NOT_EXIST;
+    }
+
+    // 팀 신청 내역이 존재하지 않습니다.
+    public boolean existMatchApplyIdx(int matchApplyIdx){
+        return teamMatchDao.existMatchApplyIdx(matchApplyIdx)==DO_NOT_EXIST;
+    }
+
+    // 탈퇴한 유저입니다.
+    public boolean checkUserStatus(int userIdx){
+        return teamMatchDao.checkUserStatus(userIdx).equals("INACTIVE");
+    }
+
+    // 존재하지 않은 유저입니다.
+    public boolean checkUserExist(int userIdx){
+        return teamMatchDao.checkUserExist(userIdx)==DO_NOT_EXIST;
+    }
+
     public int selectUserIdxByMatchPostIdx(int matchPostIdx) throws BaseException {
         // 팀 매칭 글이 존재하지 않습니다.
-        if(teamMatchDao.existTeamMatchPostIdx(matchPostIdx) == DO_NOT_EXIST){    // 팀 매칭글이 존재하지 않는 경우
+        if(existTeamMatchPostIdx(matchPostIdx)){    // 팀 매칭글이 존재하지 않는 경우
             throw new BaseException(BaseResponseStatus.MATCH_POST_DOES_NOT_EXIST);
         }
-        int userIdx = teamMatchDao.whoWritePost(matchPostIdx); // 매칭글 idx로 매칭글 작성한 유저 idx 찾기
+        int userIdx = teamMatchDao.findUserIdxByPostIdx(matchPostIdx); // 매칭글 idx로 매칭글 작성한 유저 idx 찾기
         return userIdx;
     }
 
     // teamScheduleIdx에서 homeIdx(팀 idx) 가져오기
     public int selectHomeIdxByTeamScheduleIdx(int teamScheduleIdx) throws BaseException{
         // 존재하지 않는 팀 일정(경기)입니다.
-        if(teamMatchDao.existTeamMatch(teamScheduleIdx) == DO_NOT_EXIST){    // 탐 일정이 존재하지 않는 경우
+        if(existTeamMatch(teamScheduleIdx)){    // 탐 일정이 존재하지 않는 경우
             throw new BaseException(BaseResponseStatus.SCHEDULE_DOES_NOT_EXIST);
         }
         int homeTeamIdx = teamMatchDao.selectHomeIdxByTeamScheduleIdx(teamScheduleIdx);
@@ -50,7 +80,7 @@ public class TeamMatchProvider {
     // teamScheduleIdx에서 awayIdx(팀 idx) 가져오기
     public int selectAwayIdxByTeamScheduleIdx(int teamScheduleIdx) throws BaseException{
         // 존재하지 않는 팀 일정(경기)입니다.
-        if(teamMatchDao.existTeamMatch(teamScheduleIdx) == DO_NOT_EXIST){    // 탐 일정이 존재하지 않는 경우
+        if(existTeamMatch(teamScheduleIdx)){    // 탐 일정이 존재하지 않는 경우
             throw new BaseException(BaseResponseStatus.SCHEDULE_DOES_NOT_EXIST);
         }
         int awayTeamIdx = teamMatchDao.selectAwayIdxByTeamScheduleIdx(teamScheduleIdx);
@@ -60,7 +90,7 @@ public class TeamMatchProvider {
     // 팀의 리더 userIdx 가져오기
     public int selectLeaderIdxByTeamIdx(int homeIdx) throws BaseException{
         // 존재하지 않는 팀입니다.
-        if(teamMatchDao.existTeamInfo(homeIdx)==DO_NOT_EXIST){     // 팀이 존재하지 않는 경우
+        if(existTeamInfo(homeIdx)){     // 팀이 존재하지 않는 경우
             throw new BaseException(BaseResponseStatus.TEAM_DOES_NOT_EXIST);
         }
         int leaderUserIdx = teamMatchDao.selectLeaderIdxByTeamIdx(homeIdx);
@@ -71,7 +101,7 @@ public class TeamMatchProvider {
     public List<GetApplyTeamRes> getApplyTeam(int teamScheduleIdx) throws BaseException{
         try{
             // 1. 존재하지 않는 팀 일정(경기)입니다.
-            if(teamMatchDao.existTeamMatch(teamScheduleIdx) == DO_NOT_EXIST){    // 탐 일정이 존재하지 않는 경우
+            if(existTeamMatch(teamScheduleIdx)){    // 탐 일정이 존재하지 않는 경우
                 throw new BaseException(BaseResponseStatus.SCHEDULE_DOES_NOT_EXIST);
             }
             List<GetApplyTeamRes> getApplyTeamResList = teamMatchDao.getApplyTeamRes(teamScheduleIdx);
@@ -87,7 +117,7 @@ public class TeamMatchProvider {
     public int selectUserIdxByTeamScheduleIdx(int teamScheduleIdx) throws BaseException{
         try{
             // 존재하지 않는 팀 일정(경기)입니다.
-            if(teamMatchDao.existTeamMatch(teamScheduleIdx) == DO_NOT_EXIST){    // 탐 일정이 존재하지 않는 경우
+            if(existTeamMatch(teamScheduleIdx)){    // 탐 일정이 존재하지 않는 경우
                 throw new BaseException(BaseResponseStatus.SCHEDULE_DOES_NOT_EXIST);
             }
             int userIdx = teamMatchDao.selectUserIdxByTeamScheduleIdx(teamScheduleIdx);
@@ -101,7 +131,7 @@ public class TeamMatchProvider {
     
     public int selectHomeLeaderIdxByMatchApplyIdx(int matchApplyIdx) throws BaseException{
         // 팀 신청 내역이 존재하지 않습니다.
-        if(teamMatchDao.existMatchApplyIdx(matchApplyIdx)==DO_NOT_EXIST){
+        if(existMatchApplyIdx(matchApplyIdx)){
             throw new BaseException(BaseResponseStatus.MATCH_APPLY_DOES_NOT_EXIST);
         }
         int leaderUserIdx = teamMatchDao.selectHomeLeaderIdxByMatchApplyIdx(matchApplyIdx);
@@ -112,11 +142,11 @@ public class TeamMatchProvider {
     public List<GetTeamMatchPostRes> getTeamMatchPosts(int userIdxByJwt, String town, String startTime, String endTime) throws BaseException {
         try{
             // 0. 탈퇴한 유저입니다.
-            if(teamMatchDao.checkUserStatus(userIdxByJwt).equals("INACTIVE")){   // 사용자가 탈퇴한 회원인 경우
+            if(checkUserStatus(userIdxByJwt)){   // 사용자가 탈퇴한 회원인 경우
                 throw new BaseException(BaseResponseStatus.LEAVED_USER);
             }
             // 1. 존재하지 않은 유저입니다.
-            if(teamMatchDao.checkUserExist(userIdxByJwt)==DO_NOT_EXIST){
+            if(checkUserExist(userIdxByJwt)){
                 throw new BaseException(BaseResponseStatus.USER_DOES_NOT_EXIST);
             }
             List<GetTeamMatchPostRes> getTeamMatchPostResList = teamMatchDao.getTeamMatchPosts(userIdxByJwt, town, startTime, endTime);
@@ -126,5 +156,9 @@ public class TeamMatchProvider {
         }catch(Exception exception){
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
+    }
+
+    public boolean checkUserIdxAndUserIdxByJWT(int userIdx, int userIdxByJwt){
+        return userIdx == userIdxByJwt;
     }
 }
