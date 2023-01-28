@@ -32,6 +32,260 @@ public class TeamMatchService {
         this.teamMatchDao = teamMatchDao;
         this.teamMatchProvider = teamMatchProvider;
         this.jwtService = jwtService;
+    }    
+    
+    public BaseResponse<PostTeamMatchPostsRes> createTeamMatchPost(int userIdx, PostTeamMatchPostsReq postTeamMatchPostsReq) throws BaseException{
+        try{
+            if(checkUserStatus(userIdx)){
+                return new BaseResponse<>(BaseResponseStatus.LEAVED_USER);
+            }
+            if(isLeader(userIdx)){
+                return new BaseResponse<>(BaseResponseStatus.UNAUTHORIZED_ACCESS);
+            }
+            if(teamMatchDao.existTeamMatchPost(postTeamMatchPostsReq.getTeamScheduleIdx()) > DO_NOT_EXIST){
+                return new BaseResponse<>(BaseResponseStatus.MATCH_ALREADY_EXIST);
+            }
+            if(doNotExistTeamMatch(postTeamMatchPostsReq.getTeamScheduleIdx())){
+                return new BaseResponse<>(BaseResponseStatus.SCHEDULE_DOES_NOT_EXIST);
+            }
+            if(validPostAccessTime(postTeamMatchPostsReq.getTeamScheduleIdx())){
+                return new BaseResponse<>(BaseResponseStatus.MATCH_CREATE_PERIOD_ERROR);
+            }
+
+            int postIdx = teamMatchDao.insertMatchPost(userIdx, postTeamMatchPostsReq);
+            return new BaseResponse<>(new PostTeamMatchPostsRes(postIdx, "TEAM"));
+
+        }catch(Exception exception){
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
+
+    public BaseResponse<ModifyTeamMatchPostsRes> modifyTeamMatchPost(ModifyTeamMatchPostsReq modifyTeamMatchPostsReq, int matchPostIdx) throws BaseException {
+        try{
+            if(checkUserStatus(modifyTeamMatchPostsReq.getUserIdx())){
+                return new BaseResponse<>(BaseResponseStatus.LEAVED_USER);
+            }
+            if(isLeader(modifyTeamMatchPostsReq.getUserIdx())){
+                return new BaseResponse<>(BaseResponseStatus.UNAUTHORIZED_ACCESS);
+            }
+            if(doNotExistTeamMatchPostIdx(matchPostIdx)){
+                return new BaseResponse<>(BaseResponseStatus.MATCH_POST_DOES_NOT_EXIST);
+            }
+            if(doNotExistTeamMatch(modifyTeamMatchPostsReq.getTeamScheduleIdx())){
+                return new BaseResponse<>(BaseResponseStatus.SCHEDULE_DOES_NOT_EXIST);
+            }
+            if(!intEqualsInt(findUserIdxByPostIdx(matchPostIdx),modifyTeamMatchPostsReq.getUserIdx())){
+                return new BaseResponse<>(BaseResponseStatus.UNAUTHORIZED_POST);
+            }
+            if(validPostAccessTime(modifyTeamMatchPostsReq.getTeamScheduleIdx())){
+                return new BaseResponse<>(BaseResponseStatus.MATCH_CREATE_PERIOD_ERROR);
+            }
+
+            int result = teamMatchDao.updateMatchPost(matchPostIdx, modifyTeamMatchPostsReq.getContents());
+            if(intEqualsInt(result,0)) {
+                throw new BaseException(BaseResponseStatus.MODIFY_FAIL_POST);
+            }
+            return new BaseResponse<>(new ModifyTeamMatchPostsRes(matchPostIdx,"TEAM"));
+
+        }catch(Exception exception){
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
+
+    public int findUserIdxByPostIdx(int matchPostIdx){
+        return teamMatchDao.findUserIdxByPostIdx(matchPostIdx);
+    }
+
+    public void deleteTeamMatchPosts(int userIdxByJwt, int matchPostIdx) throws BaseException {
+        try{
+            if(checkUserStatus(userIdxByJwt)){
+                throw new BaseException(BaseResponseStatus.LEAVED_USER);
+            }
+            if(isLeader(userIdxByJwt)){
+                throw new BaseException(BaseResponseStatus.UNAUTHORIZED_ACCESS);
+            }
+            if(validPostAccessTime(teamMatchDao.selectScheduleIdxByMatchPostIdx(matchPostIdx))){
+                throw new BaseException(BaseResponseStatus.MATCH_CREATE_PERIOD_ERROR);
+            }
+
+            int result = teamMatchDao.deleteTeamMatchPosts(matchPostIdx);
+            if(intEqualsInt(result,0)){
+                throw new BaseException(BaseResponseStatus.DELETE_FAIL_POST);
+            }
+        }catch(BaseException e){
+            throw e;
+        }catch(Exception exception){
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
+
+
+    
+    public void applyTeamMatch(int userIdxByJwt, int matchPostIdx) throws BaseException{
+        try{
+            if(checkUserStatus(userIdxByJwt)){
+                throw new BaseException(BaseResponseStatus.LEAVED_USER);
+            }
+            if(isLeader(userIdxByJwt)){
+                throw new BaseException(BaseResponseStatus.UNAUTHORIZED_ACCESS);
+            }
+            if(doNotExistTeamMatchPostIdx(matchPostIdx)){
+                throw new BaseException(BaseResponseStatus.MATCH_POST_DOES_NOT_EXIST);
+            }
+            if(checkApplyStatus(matchPostIdx)){
+                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE);
+            }
+            if(validPostAccessTime(teamMatchDao.selectScheduleIdxByMatchPostIdx(matchPostIdx))){
+                throw new BaseException(BaseResponseStatus.MATCH_CREATE_PERIOD_ERROR);
+            }
+
+            teamMatchDao.applyTeamMatch(userIdxByJwt, matchPostIdx);
+        }catch(BaseException e){
+            throw e;
+        }catch(Exception exception){
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
+    
+    public void cancelApplyTeamMatch(int userIdxByJwt, int matchPostIdx) throws BaseException {
+        try {
+            if(checkUserStatus(userIdxByJwt)){
+                throw new BaseException(BaseResponseStatus.LEAVED_USER);
+            }
+            if(isLeader(userIdxByJwt)){
+                throw new BaseException(BaseResponseStatus.UNAUTHORIZED_ACCESS);
+            }
+            if (doNotExistTeamMatchPostIdx(matchPostIdx)) {
+                throw new BaseException(BaseResponseStatus.MATCH_POST_DOES_NOT_EXIST);
+            }
+            if(doNotExistMatchApply(userIdxByJwt, matchPostIdx)){
+                throw new BaseException(BaseResponseStatus.TEAM_APPLY_DOES_NOT_EXIST);
+            }
+            if (checkMatchPostStatus(userIdxByJwt, matchPostIdx,"ACCEPTED")) {
+                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE);
+            }
+            if (checkMatchPostStatus(userIdxByJwt, matchPostIdx,"CANCELED")) {
+                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE);
+            }
+            if(validPostAccessTime(teamMatchDao.selectScheduleIdxByMatchPostIdx(matchPostIdx))){
+                throw new BaseException(BaseResponseStatus.MATCH_CREATE_PERIOD_ERROR);
+            }
+
+            teamMatchDao.cancelApplyTeamMatch(userIdxByJwt, matchPostIdx);
+        } catch (BaseException e) {
+            throw e;
+        } catch (Exception exception) {
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
+    
+    public boolean doNotExistMatchApply(int userIdx, int matchPostIdx){
+        return teamMatchDao.existMatchApply(userIdx, matchPostIdx)==DO_NOT_EXIST;
+    }
+    
+    public boolean checkMatchPostStatus(int userIdx, int matchPostIdx, String status){
+        return teamMatchDao.checkAlreadyApplyStatus(userIdx, matchPostIdx).equals(status);
+    }
+    
+    public BaseResponse<PostGameResultRes> postGameResult(PostGameResultReq postGameResultReq) throws BaseException{
+        try{
+            int homeTeamIdx = teamMatchProvider.selectHomeIdxByTeamScheduleIdx(postGameResultReq.getTeamScheduleIdx());
+            int awayTeamIdx = teamMatchProvider.selectAwayIdxByTeamScheduleIdx(postGameResultReq.getTeamScheduleIdx());
+            int leaderUserIdx = teamMatchProvider.selectLeaderIdxByTeamIdx(homeTeamIdx);
+
+            if(checkUserStatus(leaderUserIdx)){
+                return new BaseResponse<>(BaseResponseStatus.LEAVED_USER);
+            }
+            if(isLeader(leaderUserIdx)){
+                return new BaseResponse<>(BaseResponseStatus.UNAUTHORIZED_ACCESS);
+            }
+            if(doNotExistTeamMatch(postGameResultReq.getTeamScheduleIdx())){
+                throw new BaseException(BaseResponseStatus.SCHEDULE_DOES_NOT_EXIST);
+            }
+            if(validResultAccessTime(postGameResultReq.getTeamScheduleIdx())){
+                return new BaseResponse<>(BaseResponseStatus.GAME_RESULT_PERIOD_ERROR);
+            }
+
+            int gameResultIdx = teamMatchDao.postGameResult(postGameResultReq);
+            if(postGameResultReq.getAwayScore()>postGameResultReq.getHomeScore()){
+                updateTeamScore(homeTeamIdx,1);
+                updateTeamScore(awayTeamIdx,3);
+            }
+            else if(postGameResultReq.getAwayScore()<postGameResultReq.getHomeScore()){
+                updateTeamScore(homeTeamIdx,3);
+                updateTeamScore(awayTeamIdx,1);
+            }
+            else if(postGameResultReq.getAwayScore()==postGameResultReq.getHomeScore()){
+                updateTeamScore(homeTeamIdx,2);
+                updateTeamScore(awayTeamIdx,2);
+            }
+            return new BaseResponse<>(new PostGameResultRes(gameResultIdx));
+        }catch(Exception exception){
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
+
+    public void updateTeamScore(int teamIdx, int plusScore){
+        int teamScore = teamMatchDao.selectTeamScoreByTeamIdx(teamIdx);
+        teamMatchDao.updateTeamScore(teamIdx, teamScore+plusScore);
+    }
+
+    public void rejectTeamMatchApply(int userIdxByJwt, int matchApplyIdx) throws BaseException{
+        try{
+            if(checkUserStatus(userIdxByJwt)){
+                throw new BaseException(BaseResponseStatus.LEAVED_USER);
+            }
+            if(isLeader(userIdxByJwt)){
+                throw new BaseException(BaseResponseStatus.UNAUTHORIZED_ACCESS);
+            }
+            if (doNotExistMatchApplyIdx(matchApplyIdx)) {
+                throw new BaseException(BaseResponseStatus.MATCH_APPLY_DOES_NOT_EXIST);
+            }
+            if(checkMatchApplyIdxStatus(matchApplyIdx,"DENIED")){
+                throw new BaseException(BaseResponseStatus.MATCH_APPLY_ALREADY_DENIED);
+            }
+            if(checkMatchApplyIdxStatus(matchApplyIdx,"CANCELED")){
+                throw new BaseException(BaseResponseStatus.MATCH_APPLY_ALREADY_CANCELED);
+            }
+
+            teamMatchDao.rejectTeamMatchApply(matchApplyIdx);
+        } catch (BaseException e) {
+            throw e;
+        } catch (Exception exception) {
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
+
+    public void acceptTeamMatchApply(int userIdxByJwt, int matchApplyIdx) throws BaseException{
+        try{
+            if(checkUserStatus(userIdxByJwt)){
+                throw new BaseException(BaseResponseStatus.LEAVED_USER);
+            }
+            if(isLeader(userIdxByJwt)){
+                throw new BaseException(BaseResponseStatus.UNAUTHORIZED_ACCESS);
+            }
+
+            if (doNotExistMatchApplyIdx(matchApplyIdx)) {
+                throw new BaseException(BaseResponseStatus.MATCH_APPLY_DOES_NOT_EXIST);
+            }
+
+            if(checkMatchApplyIdxStatus(matchApplyIdx,"ACCEPTED")){
+                throw new BaseException(BaseResponseStatus.MATCH_APPLY_ALREADY_ACCEPTED);
+            }
+            
+            int matchPostIdx = teamMatchDao.selectMatchPostIdxByMatchApplyIdx(matchApplyIdx);
+            if(checkApplyStatus(matchPostIdx)){
+                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE);
+            }
+            int teamScheduleIdx = teamMatchDao.selectScheduleIdxByMatchPostIdx(matchPostIdx);
+            int awayLeaderUserIdx = teamMatchDao.selectAwayLeaderIdxByMatchApplyIdx(matchApplyIdx);
+            int awayTeamIdx = teamMatchDao.selectTeamIdxByUserIdx(awayLeaderUserIdx);
+            teamMatchDao.acceptTeamMatchApply(matchApplyIdx, matchPostIdx, teamScheduleIdx, awayTeamIdx);
+        } catch (BaseException e) {
+            throw e;
+        } catch (Exception exception) {
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
     }
 
     public boolean checkUserStatus(int userIdx){
@@ -42,45 +296,28 @@ public class TeamMatchService {
         return teamMatchDao.isLeader(userIdx).equals("F");
     }
 
+    public boolean existTeamMatch(int teamScheduleIdx){
+        return teamMatchDao.existTeamMatch(teamScheduleIdx) == DO_NOT_EXIST;
+    }
+    
     public boolean doNotExistTeamMatch(int teamScheduleIdx){
         return teamMatchDao.existTeamMatch(teamScheduleIdx) == DO_NOT_EXIST;
     }
-
-    public int findUserIdxByPostIdx(int matchPostIdx){
-        return teamMatchDao.findUserIdxByPostIdx(matchPostIdx);
-    }
-
-    public boolean intEqualsInt(int int1, int int2){
-        return int1==int2;
-    }
-
+    
     public boolean doNotExistTeamMatchPostIdx(int matchPostIdx){
         return teamMatchDao.existTeamMatchPostIdx(matchPostIdx) == DO_NOT_EXIST;
+    }
+    
+    public boolean doNotExistMatchApplyIdx(int matchApplyIdx){
+        return teamMatchDao.existMatchApplyIdx(matchApplyIdx) == DO_NOT_EXIST;
     }
 
     public boolean checkApplyStatus(int matchPostIdx){
         return teamMatchDao.checkApplyStatus(matchPostIdx)> DO_NOT_EXIST;
     }
 
-    public boolean doNotExistMatchApply(int userIdx, int matchPostIdx){
-        return teamMatchDao.existMatchApply(userIdx, matchPostIdx)==DO_NOT_EXIST;
-    }
-
-    public boolean checkMatchPostStatus(int userIdx, int matchPostIdx, String status){
-        return teamMatchDao.checkAlreadyApplyStatus(userIdx, matchPostIdx).equals(status);
-    }
-
-    public boolean doNotExistMatchApplyIdx(int matchApplyIdx){
-        return teamMatchDao.existMatchApplyIdx(matchApplyIdx) == DO_NOT_EXIST;
-    }
-
     public boolean checkMatchApplyIdxStatus(int matchApplyIdx, String status){
         return teamMatchDao.checkMatchApplyIdxStatus(matchApplyIdx).equals(status);
-    }
-
-    public void updateTeamScore(int teamIdx, int plusScore){
-        int teamScore = teamMatchDao.selectTeamScoreByTeamIdx(teamIdx);
-        teamMatchDao.updateTeamScore(teamIdx, teamScore+plusScore);
     }
 
     public boolean validPostAccessTime(int teamScheduleIdx){
@@ -88,7 +325,7 @@ public class TeamMatchService {
 
         Date startDate = setDate(start);
         Calendar startTime = setCalendar(startDate);
-        startTime = calTwoHoursAgo(startTime);  // 게시글 접근 가능 시간 찾기
+        startTime = calTwoHoursAgo(startTime);  // post 접근 가능 시간 찾기
 
         Calendar now = setNowDate();
         return startTimeCompareToNow(startTime, now);
@@ -130,7 +367,7 @@ public class TeamMatchService {
     }
 
     public Calendar setNowDate(){
-        Date date = new Date();
+        Date date = new Date();     
         Calendar now = Calendar.getInstance();
         now.setTime(date);
         return now;
@@ -140,13 +377,14 @@ public class TeamMatchService {
         return startTime.compareTo(now)==-1;
     }
 
+    // 경기가 종료된 후에 경기 결과 추가가 가능하다.
     public boolean validResultAccessTime(int teamScheduleIdx){
         String end = selectEndTime(teamScheduleIdx);
 
         Date endDate = setDate(end);
         Calendar endTime = setCalendar(endDate);
 
-        Calendar now = setNowDate();
+        Calendar now = setNowDate();   
         return nowCompareToEndTime(now, endTime);
     }
 
@@ -165,271 +403,7 @@ public class TeamMatchService {
         return now.compareTo(endTime)==-1;
     }
 
-
-    public BaseResponse<PostTeamMatchPostsRes> createTeamMatchPost(int userIdx, PostTeamMatchPostsReq postTeamMatchPostsReq) throws BaseException{
-        try{
-            if(checkUserStatus(userIdx)){
-                return new BaseResponse<>(BaseResponseStatus.LEAVED_USER);
-            }
-
-            if(isLeader(userIdx)){
-                return new BaseResponse<>(BaseResponseStatus.UNAUTHORIZED_ACCESS);
-            }
-
-            if(teamMatchDao.existTeamMatchPost(postTeamMatchPostsReq.getTeamScheduleIdx()) > DO_NOT_EXIST){
-                return new BaseResponse<>(BaseResponseStatus.MATCH_ALREADY_EXIST);
-            }
-
-            if(doNotExistTeamMatch(postTeamMatchPostsReq.getTeamScheduleIdx())){
-                return new BaseResponse<>(BaseResponseStatus.SCHEDULE_DOES_NOT_EXIST);
-            }
-
-            if(validPostAccessTime(postTeamMatchPostsReq.getTeamScheduleIdx())){
-                return new BaseResponse<>(BaseResponseStatus.MATCH_CREATE_PERIOD_ERROR);
-            }
-
-            int postIdx = teamMatchDao.insertMatchPost(userIdx, postTeamMatchPostsReq);
-            return new BaseResponse<>(new PostTeamMatchPostsRes(postIdx, "TEAM"));
-
-        }catch(Exception exception){
-            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
-        }
-    }
-
-    public BaseResponse<ModifyTeamMatchPostsRes> modifyTeamMatchPost(ModifyTeamMatchPostsReq modifyTeamMatchPostsReq, int matchPostIdx) throws BaseException {
-        try{
-            if(checkUserStatus(modifyTeamMatchPostsReq.getUserIdx())){
-                return new BaseResponse<>(BaseResponseStatus.LEAVED_USER);
-            }
-
-            if(isLeader(modifyTeamMatchPostsReq.getUserIdx())){
-                return new BaseResponse<>(BaseResponseStatus.UNAUTHORIZED_ACCESS);
-            }
-
-            if(doNotExistTeamMatchPostIdx(matchPostIdx)){
-                return new BaseResponse<>(BaseResponseStatus.MATCH_POST_DOES_NOT_EXIST);
-            }
-
-            if(doNotExistTeamMatch(modifyTeamMatchPostsReq.getTeamScheduleIdx())){
-                return new BaseResponse<>(BaseResponseStatus.SCHEDULE_DOES_NOT_EXIST);
-            }
-
-            if(!intEqualsInt(findUserIdxByPostIdx(matchPostIdx),modifyTeamMatchPostsReq.getUserIdx())){
-                return new BaseResponse<>(BaseResponseStatus.UNAUTHORIZED_POST);
-            }
-
-            if(validPostAccessTime(modifyTeamMatchPostsReq.getTeamScheduleIdx())){
-                return new BaseResponse<>(BaseResponseStatus.MATCH_CREATE_PERIOD_ERROR);
-            }
-
-            int result = teamMatchDao.updateMatchPost(matchPostIdx, modifyTeamMatchPostsReq.getContents());
-            if(intEqualsInt(result,0)) {
-                throw new BaseException(BaseResponseStatus.MODIFY_FAIL_POST);
-            }
-            return new BaseResponse<>(new ModifyTeamMatchPostsRes(matchPostIdx,"TEAM"));
-
-        }catch(Exception exception){
-            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
-        }
-    }
-
-    public void deleteTeamMatchPosts(int userIdxByJwt, int matchPostIdx) throws BaseException {
-        try{
-            if(checkUserStatus(userIdxByJwt)){
-                throw new BaseException(BaseResponseStatus.LEAVED_USER);
-            }
-
-            if(isLeader(userIdxByJwt)){
-                throw new BaseException(BaseResponseStatus.UNAUTHORIZED_ACCESS);
-            }
-
-            if(validPostAccessTime(teamMatchDao.selectScheduleIdxByMatchPostIdx(matchPostIdx))){
-                throw new BaseException(BaseResponseStatus.MATCH_CREATE_PERIOD_ERROR);
-            }
-
-            int result = teamMatchDao.deleteTeamMatchPosts(matchPostIdx);
-            if(intEqualsInt(result,0)){
-                throw new BaseException(BaseResponseStatus.DELETE_FAIL_POST);
-            }
-        }catch(BaseException e){
-            throw e;
-        }catch(Exception exception){
-            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
-        }
-    }
-    
-    public void applyTeamMatch(int userIdxByJwt, int matchPostIdx) throws BaseException{
-        try{
-            if(checkUserStatus(userIdxByJwt)){
-                throw new BaseException(BaseResponseStatus.LEAVED_USER);
-            }
-
-            if(isLeader(userIdxByJwt)){
-                throw new BaseException(BaseResponseStatus.UNAUTHORIZED_ACCESS);
-            }
-
-            if(doNotExistTeamMatchPostIdx(matchPostIdx)){
-                throw new BaseException(BaseResponseStatus.MATCH_POST_DOES_NOT_EXIST);
-            }
-
-            if(checkApplyStatus(matchPostIdx)){
-                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE);
-            }
-
-            if(validPostAccessTime(teamMatchDao.selectScheduleIdxByMatchPostIdx(matchPostIdx))){
-                throw new BaseException(BaseResponseStatus.MATCH_CREATE_PERIOD_ERROR);
-            }
-
-            teamMatchDao.applyTeamMatch(userIdxByJwt, matchPostIdx);
-        }catch(BaseException e){
-            throw e;
-        }catch(Exception exception){
-            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
-        }
-    }
-    
-    public void cancelApplyTeamMatch(int userIdxByJwt, int matchPostIdx) throws BaseException {
-        try {
-            if(checkUserStatus(userIdxByJwt)){
-                throw new BaseException(BaseResponseStatus.LEAVED_USER);
-            }
-
-            if(isLeader(userIdxByJwt)){
-                throw new BaseException(BaseResponseStatus.UNAUTHORIZED_ACCESS);
-            }
-
-            if (doNotExistTeamMatchPostIdx(matchPostIdx)) {
-                throw new BaseException(BaseResponseStatus.MATCH_POST_DOES_NOT_EXIST);
-            }
-
-            if(doNotExistMatchApply(userIdxByJwt, matchPostIdx)){
-                throw new BaseException(BaseResponseStatus.TEAM_APPLY_DOES_NOT_EXIST);
-            }
-
-            if (checkMatchPostStatus(userIdxByJwt, matchPostIdx,"ACCEPTED")) {
-                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE);
-            }
-
-            if (checkMatchPostStatus(userIdxByJwt, matchPostIdx,"CANCELED")) {
-                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE);
-            }
-
-            if(validPostAccessTime(teamMatchDao.selectScheduleIdxByMatchPostIdx(matchPostIdx))){
-                throw new BaseException(BaseResponseStatus.MATCH_CREATE_PERIOD_ERROR);
-            }
-
-            teamMatchDao.cancelApplyTeamMatch(userIdxByJwt, matchPostIdx);
-        } catch (BaseException e) {
-            throw e;
-        } catch (Exception exception) {
-            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
-        }
-    }
-    
-    public BaseResponse<PostGameResultRes> postGameResult(PostGameResultReq postGameResultReq) throws BaseException{
-        try{
-            int homeTeamIdx = teamMatchProvider.selectHomeIdxByTeamScheduleIdx(postGameResultReq.getTeamScheduleIdx());
-            int awayTeamIdx = teamMatchProvider.selectAwayIdxByTeamScheduleIdx(postGameResultReq.getTeamScheduleIdx());
-            int leaderUserIdx = teamMatchProvider.selectLeaderIdxByTeamIdx(homeTeamIdx);
-
-            if(checkUserStatus(leaderUserIdx)){
-                return new BaseResponse<>(BaseResponseStatus.LEAVED_USER);
-            }
-
-            if(isLeader(leaderUserIdx)){
-                return new BaseResponse<>(BaseResponseStatus.UNAUTHORIZED_ACCESS);
-            }
-
-            if(doNotExistTeamMatch(postGameResultReq.getTeamScheduleIdx())){
-                throw new BaseException(BaseResponseStatus.SCHEDULE_DOES_NOT_EXIST);
-            }
-
-            if(validResultAccessTime(postGameResultReq.getTeamScheduleIdx())){
-                return new BaseResponse<>(BaseResponseStatus.GAME_RESULT_PERIOD_ERROR);
-            }
-
-            int gameResultIdx = teamMatchDao.postGameResult(postGameResultReq);
-            if(postGameResultReq.getAwayScore()>postGameResultReq.getHomeScore()){
-                updateTeamScore(homeTeamIdx,1);
-                updateTeamScore(awayTeamIdx,3);
-            }
-            else if(postGameResultReq.getAwayScore()<postGameResultReq.getHomeScore()){
-                updateTeamScore(homeTeamIdx,3);
-                updateTeamScore(awayTeamIdx,1);
-            }
-            else if(postGameResultReq.getAwayScore()==postGameResultReq.getHomeScore()){
-                updateTeamScore(homeTeamIdx,2);
-                updateTeamScore(awayTeamIdx,2);
-            }
-            return new BaseResponse<>(new PostGameResultRes(gameResultIdx));
-        }catch(Exception exception){
-            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
-        }
-    }
-
-    public void rejectTeamMatchApply(int userIdxByJwt, int matchApplyIdx) throws BaseException{
-        try{
-            if(checkUserStatus(userIdxByJwt)){
-                throw new BaseException(BaseResponseStatus.LEAVED_USER);
-            }
-
-            if(isLeader(userIdxByJwt)){
-                throw new BaseException(BaseResponseStatus.UNAUTHORIZED_ACCESS);
-            }
-
-            if (doNotExistMatchApplyIdx(matchApplyIdx)) {
-                throw new BaseException(BaseResponseStatus.MATCH_APPLY_DOES_NOT_EXIST);
-            }
-
-            if(checkMatchApplyIdxStatus(matchApplyIdx,"DENIED")){
-                throw new BaseException(BaseResponseStatus.MATCH_APPLY_ALREADY_DENIED);
-            }
-
-            if(checkMatchApplyIdxStatus(matchApplyIdx,"CANCELED")){
-                throw new BaseException(BaseResponseStatus.MATCH_APPLY_ALREADY_CANCELED);
-            }
-
-            teamMatchDao.rejectTeamMatchApply(matchApplyIdx);
-        } catch (BaseException e) {
-            throw e;
-        } catch (Exception exception) {
-            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
-        }
-    }
-
-    public void acceptTeamMatchApply(int userIdxByJwt, int matchApplyIdx) throws BaseException{
-        try{
-            if(checkUserStatus(userIdxByJwt)){
-                throw new BaseException(BaseResponseStatus.LEAVED_USER);
-            }
-
-            if(isLeader(userIdxByJwt)){
-                throw new BaseException(BaseResponseStatus.UNAUTHORIZED_ACCESS);
-            }
-
-            if (doNotExistMatchApplyIdx(matchApplyIdx)) {
-                throw new BaseException(BaseResponseStatus.MATCH_APPLY_DOES_NOT_EXIST);
-            }
-
-            if(checkMatchApplyIdxStatus(matchApplyIdx,"ACCEPTED")){
-                throw new BaseException(BaseResponseStatus.MATCH_APPLY_ALREADY_ACCEPTED);
-            }
-
-            int matchPostIdx = teamMatchDao.selectMatchPostIdxByMatchApplyIdx(matchApplyIdx);
-            if(checkApplyStatus(matchPostIdx)){
-                throw new BaseException(BaseResponseStatus.ACCEPT_NOT_AVAILABLE);
-            }
-
-
-            int teamScheduleIdx = teamMatchDao.selectScheduleIdxByMatchPostIdx(matchPostIdx);
-            int awayLeaderUserIdx = teamMatchDao.selectAwayLeaderIdxByMatchApplyIdx(matchApplyIdx);
-            int awayTeamIdx = teamMatchDao.selectTeamIdxByUserIdx(awayLeaderUserIdx);
-
-            teamMatchDao.acceptTeamMatchApply(matchApplyIdx, matchPostIdx, teamScheduleIdx, awayTeamIdx);
-        } catch (BaseException e) {
-            throw e;
-        } catch (Exception exception) {
-            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
-        }
+    public boolean intEqualsInt(int int1, int int2){
+        return int1==int2;
     }
 }

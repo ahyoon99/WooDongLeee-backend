@@ -36,17 +36,16 @@ public class TeamMatchController {
     public BaseResponse<PostTeamMatchPostsRes> createTeamMatchPosts(@PathVariable("teamScheduleIdx") int teamScheduleIdx, @RequestBody PostTeamMatchPostsReq postTeamMatchPostsReq) throws Exception{
         try {
             int userIdxByJwt = jwtService.getUserIdx();
+
             if(!postTeamMatchPostsReq.checkUserIdxAndUserIdxByJWT(userIdxByJwt)){
                 return new BaseResponse<>(BaseResponseStatus.INVALID_JWT);
             }
-
             if (postTeamMatchPostsReq.checkContentsMaxLength(POST_LENGTH_MAX)) {     // 게시글의 길이에 대한 validation
                 return new BaseResponse<>(BaseResponseStatus.POST_POSTS_INVALID_CONTENTS);
             }
 
             BaseResponse<PostTeamMatchPostsRes> postTeamMatchPostsRes = teamMatchService.createTeamMatchPost(postTeamMatchPostsReq.getUserIdx(), postTeamMatchPostsReq);
             return postTeamMatchPostsRes;
-
         } catch (BaseException exception) {
             return new BaseResponse<>(exception.getStatus());
         }
@@ -56,19 +55,17 @@ public class TeamMatchController {
     @PatchMapping("/{matchPostIdx}")
     public BaseResponse<ModifyTeamMatchPostsRes> modifyTeamMatchPosts(@PathVariable int matchPostIdx, @RequestBody ModifyTeamMatchPostsReq modifyTeamMatchPostsReq){
         try {
-
             int userIdxByJwt = jwtService.getUserIdx();
+
             if(!modifyTeamMatchPostsReq.checkUserIdxAndUserIdxByJWT(userIdxByJwt)){
                 return new BaseResponse<>(BaseResponseStatus.INVALID_JWT);
             }
-
             if(modifyTeamMatchPostsReq.checkContentsMaxLength(POST_LENGTH_MAX)){
                 return new BaseResponse<>(BaseResponseStatus.POST_POSTS_INVALID_CONTENTS);
             }
 
             BaseResponse<ModifyTeamMatchPostsRes> modifyTeamMatchPostsRes = teamMatchService.modifyTeamMatchPost(modifyTeamMatchPostsReq, matchPostIdx);
             return modifyTeamMatchPostsRes;
-
         } catch (BaseException exception) {
             return new BaseResponse<>(exception.getStatus());
         }
@@ -84,7 +81,9 @@ public class TeamMatchController {
             if(!teamMatchProvider.checkUserIdxAndUserIdxByJWT(userIdx, userIdxByJwt)){
                 return new BaseResponse<>(BaseResponseStatus.INVALID_JWT);
             }
+
             teamMatchService.deleteTeamMatchPosts(userIdxByJwt, matchPostIdx);
+
             String result = "삭제를 성공했습니다.";
             return new BaseResponse<>(result);
         } catch (BaseException exception) {
@@ -97,7 +96,9 @@ public class TeamMatchController {
     public BaseResponse<String> applyTeamMatch(@PathVariable int matchPostIdx){
         try {
             int userIdxByJwt = jwtService.getUserIdx();
+
             teamMatchService.applyTeamMatch(userIdxByJwt, matchPostIdx);
+
             String result = "팀 매칭 신청을 성공하였습니다.";
             return new BaseResponse<>(result);
         } catch (BaseException exception) {
@@ -110,7 +111,9 @@ public class TeamMatchController {
     public BaseResponse<String> cancelApplyTeamMatch(@PathVariable int matchPostIdx){
         try {
             int userIdxByJwt = jwtService.getUserIdx();
+
             teamMatchService.cancelApplyTeamMatch(userIdxByJwt, matchPostIdx);
+
             String result = "팀 매칭 신청 취소를 성공하였습니다.";
             return new BaseResponse<>(result);
         } catch (BaseException exception) {
@@ -123,18 +126,14 @@ public class TeamMatchController {
     public BaseResponse<PostGameResultRes> postGameResult(@PathVariable("teamScheduleIdx") int teamScheduleIdx, @RequestBody PostGameResultReq postGameResultReq){
         try {
             int homeTeamIdx = teamMatchProvider.selectHomeIdxByTeamScheduleIdx(teamScheduleIdx);
-
             int leaderUserIdx = teamMatchProvider.selectLeaderIdxByTeamIdx(homeTeamIdx);
-
             int userIdxByJwt = jwtService.getUserIdx();
             if(!teamMatchProvider.checkUserIdxAndUserIdxByJWT(leaderUserIdx, userIdxByJwt)){    // 결과 입력은 home팀의 리더만 가능하다.
                 return new BaseResponse<>(BaseResponseStatus.INVALID_JWT);
             }
-
             if(!postGameResultReq.checkAwayScoreMinValue(VALID_SCORE_MIN)){
                 return new BaseResponse<>(BaseResponseStatus.INVALID_SCORE_SCOPE);
             }
-
             if (!postGameResultReq.checkHomeScoreMinValue(VALID_SCORE_MIN)) {
                 return new BaseResponse<>(BaseResponseStatus.INVALID_SCORE_SCOPE);
             }
@@ -169,12 +168,14 @@ public class TeamMatchController {
     public BaseResponse<String> rejectTeamMatchApply(@PathVariable int matchApplyIdx){
         try {
             int leaderUserIdx = teamMatchProvider.selectHomeLeaderIdxByMatchApplyIdx(matchApplyIdx);
-
             int userIdxByJwt = jwtService.getUserIdx();
+
             if(!teamMatchProvider.checkUserIdxAndUserIdxByJWT(leaderUserIdx, userIdxByJwt)){
                 return new BaseResponse<>(BaseResponseStatus.INVALID_JWT);
             }
+
             teamMatchService.rejectTeamMatchApply(userIdxByJwt, matchApplyIdx);
+
             String result = "팀 매칭 신청 거절을 성공하였습니다.";
             return new BaseResponse<>(result);
         } catch (BaseException exception) {
@@ -187,6 +188,7 @@ public class TeamMatchController {
     public BaseResponse<List<GetTeamMatchPostRes>> getTeamMatchPosts(@RequestParam String town, @RequestParam String startTime, @RequestParam String endTime) {
         try {
             int userIdxByJwt = jwtService.getUserIdx();
+
             List<GetTeamMatchPostRes> getTeamMatchPostResList = teamMatchProvider.getTeamMatchPosts(userIdxByJwt, town, startTime, endTime);
             return new BaseResponse<>(getTeamMatchPostResList);
         } catch (BaseException exception) {
@@ -199,13 +201,14 @@ public class TeamMatchController {
     public BaseResponse<String> acceptTeamMatchApply(@PathVariable int matchApplyIdx){
         try {
             int leaderUserIdx = teamMatchProvider.selectHomeLeaderIdxByMatchApplyIdx(matchApplyIdx);
-
             int userIdxByJwt = jwtService.getUserIdx();
 
             if(!teamMatchProvider.checkUserIdxAndUserIdxByJWT(leaderUserIdx, userIdxByJwt)){
                 return new BaseResponse<>(BaseResponseStatus.INVALID_JWT);
             }
+
             teamMatchService.acceptTeamMatchApply(userIdxByJwt, matchApplyIdx);
+
             String result = "팀 매칭 신청 승인을 성공하였습니다.";
             return new BaseResponse<>(result);
         } catch (BaseException exception) {
