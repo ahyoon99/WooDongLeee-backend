@@ -113,7 +113,7 @@ public class TeamMatchService {
                 throw new BaseException(BaseResponseStatus.DELETE_FAIL_POST);
             }
         }catch(BaseException e){
-            throw e;
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }catch(Exception exception){
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
@@ -141,7 +141,7 @@ public class TeamMatchService {
 
             teamMatchDao.applyTeamMatch(userIdxByJwt, matchPostIdx);
         }catch(BaseException e){
-            throw e;
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }catch(Exception exception){
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
@@ -173,7 +173,7 @@ public class TeamMatchService {
 
             teamMatchDao.cancelApplyTeamMatch(userIdxByJwt, matchPostIdx);
         } catch (BaseException e) {
-            throw e;
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         } catch (Exception exception) {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
@@ -201,6 +201,7 @@ public class TeamMatchService {
             }
             if(doNotExistTeamMatch(postGameResultReq.getTeamScheduleIdx())){
                 throw new BaseException(BaseResponseStatus.SCHEDULE_DOES_NOT_EXIST);
+                //throw new BaseResponse<>(BaseResponseStatus.SCHEDULE_DOES_NOT_EXIST); 아닌가..?
             }
             if(validResultAccessTime(postGameResultReq.getTeamScheduleIdx())){
                 return new BaseResponse<>(BaseResponseStatus.GAME_RESULT_PERIOD_ERROR);
@@ -250,7 +251,7 @@ public class TeamMatchService {
 
             teamMatchDao.rejectTeamMatchApply(matchApplyIdx);
         } catch (BaseException e) {
-            throw e;
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         } catch (Exception exception) {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
@@ -282,7 +283,7 @@ public class TeamMatchService {
             int awayTeamIdx = teamMatchDao.selectTeamIdxByUserIdx(awayLeaderUserIdx);
             teamMatchDao.acceptTeamMatchApply(matchApplyIdx, matchPostIdx, teamScheduleIdx, awayTeamIdx);
         } catch (BaseException e) {
-            throw e;
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         } catch (Exception exception) {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
@@ -332,7 +333,7 @@ public class TeamMatchService {
     }
 
     public String selectStartTime(int teamScheduleIdx){
-        String start = null;
+        String start = "2000-01-01 00:00:00";
         try {
             start = teamMatchDao.selectStartTime(teamScheduleIdx);
             return start;
@@ -374,7 +375,7 @@ public class TeamMatchService {
     }
 
     public boolean startTimeCompareToNow(Calendar startTime, Calendar now){
-        return startTime.compareTo(now)==-1;
+        return now.compareTo(startTime)==-1;
     }
 
     // 경기가 종료된 후에 경기 결과 추가가 가능하다.
@@ -389,7 +390,7 @@ public class TeamMatchService {
     }
 
     public String selectEndTime(int teamScheduleIdx){
-        String end = null;
+        String end = "9999-01-01 00:00:00";
         try {
             end = teamMatchDao.selectEndTime(teamScheduleIdx);
             return end;
@@ -400,7 +401,7 @@ public class TeamMatchService {
     }
 
     public boolean nowCompareToEndTime(Calendar now, Calendar endTime){
-        return now.compareTo(endTime)==-1;
+        return endTime.compareTo(now)==-1;
     }
 
     public boolean intEqualsInt(int int1, int int2){
