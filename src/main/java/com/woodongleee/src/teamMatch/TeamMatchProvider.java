@@ -79,7 +79,7 @@ public class TeamMatchProvider {
             List<GetApplyTeamRes> getApplyTeamResList = teamMatchDao.getApplyTeamRes(teamScheduleIdx);
             return getApplyTeamResList;
         } catch(BaseException e){
-            throw e;
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }catch(Exception exception){
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
@@ -94,7 +94,7 @@ public class TeamMatchProvider {
             int userIdx = teamMatchDao.selectUserIdxByTeamScheduleIdx(teamScheduleIdx);
             return userIdx;
         }catch(BaseException e){
-            throw e;
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }catch(Exception exception){
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
@@ -125,7 +125,7 @@ public class TeamMatchProvider {
             List<GetTeamMatchPostRes> getTeamMatchPostResList = teamMatchDao.getTeamMatchPosts(userIdxByJwt, town, startTime, endTime);
             return getTeamMatchPostResList;
         } catch(BaseException e){
-            throw e;
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }catch(Exception exception){
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
