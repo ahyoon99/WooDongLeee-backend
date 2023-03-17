@@ -15,9 +15,10 @@ import java.util.List;
 @Service
 public class TeamMatchProvider {
 
+    public static final int DO_NOT_EXIST = 0;
+
     private final TeamMatchDao teamMatchDao;
     private final JwtService jwtService;
-    public static final int DO_NOT_EXIST = 0;
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
 

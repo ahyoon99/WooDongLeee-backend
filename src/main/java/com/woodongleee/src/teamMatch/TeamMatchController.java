@@ -17,13 +17,14 @@ import java.util.List;
 @RequestMapping("/team-match")
 public class TeamMatchController {
 
-    final Logger logger = LoggerFactory.getLogger(this.getClass());
+    public static final int POST_LENGTH_MAX = 500;
+    public static final int VALID_SCORE_MIN = 0;
 
     private final TeamMatchProvider teamMatchProvider;
     private final TeamMatchService teamMatchService;
     private final JwtService jwtService;
-    public static final int POST_LENGTH_MAX = 500;
-    public static final int VALID_SCORE_MIN = 0;
+
+    final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public TeamMatchController(TeamMatchProvider teamMatchProvider, TeamMatchService teamMatchService, JwtService jwtService) {
         this.teamMatchProvider = teamMatchProvider;

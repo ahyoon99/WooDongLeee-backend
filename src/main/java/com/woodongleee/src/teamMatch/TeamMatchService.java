@@ -19,12 +19,13 @@ import java.util.Date;
 @Service
 public class TeamMatchService {
 
-    final Logger logger = LoggerFactory.getLogger(this.getClass());
+    public static final int DO_NOT_EXIST = 0;
 
     private final TeamMatchDao teamMatchDao;
     private final TeamMatchProvider teamMatchProvider;
     private final JwtService jwtService;
-    public static final int DO_NOT_EXIST = 0;
+
+    final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 
     @Autowired
