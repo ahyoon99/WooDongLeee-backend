@@ -209,21 +209,28 @@ public class TeamMatchService {
             }
 
             int gameResultIdx = teamMatchDao.postGameResult(postGameResultReq);
-            if(postGameResultReq.getAwayScore()>postGameResultReq.getHomeScore()){
-                updateTeamScore(homeTeamIdx,1);
-                updateTeamScore(awayTeamIdx,3);
-            }
-            else if(postGameResultReq.getAwayScore()<postGameResultReq.getHomeScore()){
-                updateTeamScore(homeTeamIdx,3);
-                updateTeamScore(awayTeamIdx,1);
-            }
-            else if(postGameResultReq.getAwayScore()==postGameResultReq.getHomeScore()){
-                updateTeamScore(homeTeamIdx,2);
-                updateTeamScore(awayTeamIdx,2);
-            }
+            calculateGameResult(postGameResultReq);
             return new BaseResponse<>(new PostGameResultRes(gameResultIdx));
         }catch(Exception exception){
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
+
+    public void calculateGameResult(PostGameResultReq postGameResultReq) throws BaseException{
+        int homeTeamIdx = teamMatchProvider.selectHomeIdxByTeamScheduleIdx(postGameResultReq.getTeamScheduleIdx());
+        int awayTeamIdx = teamMatchProvider.selectAwayIdxByTeamScheduleIdx(postGameResultReq.getTeamScheduleIdx());
+
+        if(postGameResultReq.getAwayScore()>postGameResultReq.getHomeScore()){
+            updateTeamScore(homeTeamIdx,1);
+            updateTeamScore(awayTeamIdx,3);
+        }
+        else if(postGameResultReq.getAwayScore()<postGameResultReq.getHomeScore()){
+            updateTeamScore(homeTeamIdx,3);
+            updateTeamScore(awayTeamIdx,1);
+        }
+        else if(postGameResultReq.getAwayScore()==postGameResultReq.getHomeScore()){
+            updateTeamScore(homeTeamIdx,2);
+            updateTeamScore(awayTeamIdx,2);
         }
     }
 
